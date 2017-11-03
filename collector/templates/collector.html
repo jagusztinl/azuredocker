@@ -1,0 +1,35 @@
+<html>
+    <head>
+        <title>Hello, world!</title>
+        <link rel="stylesheet" href="//maxcdn.bootstrapcdn.com/bootstrap/3.2.0/css/bootstrap.min.css">
+        <link rel="stylesheet" href="//maxcdn.bootstrapcdn.com/bootstrap/3.2.0/css/bootstrap-theme.min.css">
+        <link href='//fonts.googleapis.com/css?family=Lobster&subset=latin,latin-ext' rel='stylesheet' type='text/css'>
+    </head>
+    <body>
+        <div class="page-header">
+            <h1><a href="/">Hello, world</a></h1>
+        </div>
+        <div class="content container">
+            Number of files uploaded: {{ num_files }}
+            <table class="table table-responsive table-striped">
+                <th>Id</th>
+                <th>Name</th>
+                <th>Size</th>
+                <th></th>
+            {% for file in files %}
+                <tr>
+                    <td>{{ file.id }}</td>
+                    <td>{{ file.name }}</td>
+                    <td>{{ file.size }}</td>
+                    <td>Delete</td>
+                </tr>
+            {% endfor %}
+            </table>
+            <form action="upload" method="post" enctype="multipart/form-data">
+                Select file to upload:
+                <input type="file" name="file" id="fileSelector" multiple/>
+                <input type="submit" value="Upload" name="uploadButton"/>
+            </form>
+        </div>
+    </body>
+</html>

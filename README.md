@@ -1,0 +1,1 @@
+docker-compose that supports being deployed on a docker swarm

@@ -1,0 +1,14 @@
+{
+	"folders":
+	[
+        {
+            "path": ".",
+            "name": "Bike Road Quality",
+            "folder_exclude_patterns": ["__pycache__"]
+        }
+	],
+    "settings":
+    {
+        "tab_size": 4
+    },
+}
