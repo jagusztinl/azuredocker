@@ -11,20 +11,26 @@
         </div>
         <div class="content container">
             Number of files uploaded: {{ num_files }}
-            <table class="table table-responsive table-striped">
-                <th>Id</th>
-                <th>Name</th>
-                <th>Size</th>
-                <th></th>
-            {% for file in files %}
-                <tr>
-                    <td>{{ file.id }}</td>
-                    <td>{{ file.name }}</td>
-                    <td>{{ file.size }}</td>
-                    <td>Delete</td>
-                </tr>
-            {% endfor %}
-            </table>
+            <form action="delete_files" method="post">
+                {% csrf_token %}
+                <table class="table table-responsive table-striped">
+                    <th></th>
+                    <th>Id</th>
+                    <th>Name</th>
+                    <th>Size</th>
+                    <th></th>
+                {% for file in files %}
+                    <tr>
+                        <td><input type="checkbox" name="{{ file.id }}"></input></td>
+                        <td>{{ file.id }}</td>
+                        <td>{{ file.name }}</td>
+                        <td>{{ file.size }}</td>
+                    </tr>
+                {% endfor %}
+                </table>
+                <!-- Let's do this RESTy later -->
+                <input type="submit" value="Delete Selected"/>
+            </form>
             <form action="upload" method="post" enctype="multipart/form-data">
                 Select file to upload:
                 <input type="file" name="file" id="fileSelector" multiple/>
