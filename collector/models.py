@@ -15,7 +15,13 @@ class File(models.Model):
     name = models.CharField(max_length=256)
     datatype = models.CharField(max_length=1, choices=DATATYPES)
     data = models.BinaryField()
-    size = models.BigIntegerField()
+
+    @property
+    def size(self):
+        if self.data:
+            return self.data.nbytes
+        else:
+            return 0
 
 
 class JsonData(models.Model):

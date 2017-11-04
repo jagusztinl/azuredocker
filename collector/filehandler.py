@@ -11,7 +11,6 @@ def save_request_file(request_file):
     fileModel = File(
         name=rf.name,
         data=rf.read(),
-        size=rf.size,
     )
     fileModel.save()
     return dict(
