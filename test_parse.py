@@ -17,7 +17,6 @@ class ParseTest(TestCase):
         File.objects.create(
             name='location_2015-01-08 23_21_33 - 2015-01-08 23_21_39 (4).csv',
             data=bytes(data, 'utf-8'),
-            size=len(data)
         )
 
     def test_parse(self):

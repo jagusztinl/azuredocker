@@ -1,14 +1,15 @@
 from django.shortcuts import render
-from django.template.loader import get_template
+#from django.template.loader import get_template
 from django.views.decorators.csrf import csrf_exempt
 from django.db.models import Count
 from django.http import (
     HttpResponse,
-    HttpResponseRedirect
+    HttpResponseRedirect,
+    JsonResponse,
 )
 import datetime
 import re
-from .filehandler import save_request_file, delete_file
+import collector.filehandler as filehandler
 from .models import File
 
 # Create your views here.
@@ -35,7 +36,7 @@ def upload(request):
     if request.method == 'POST':
         for key in request.FILES.keys():
             for file in request.FILES.getlist(key):
-                ret.append(save_request_file(file))
+                ret.append(filehandler.save_request_file(file))
 
         return HttpResponseRedirect('..')
 #        return HttpResponse('files: {}'.format(ret))
@@ -48,13 +49,29 @@ def delete_files(request):
     ret = []
     for key, value in request.POST.items():
         if re.match('[0-9]+$', key):
-            success = delete_file(int(key))
+            success = filehandler.delete_file(int(key))
             ret.append(dict(id=key, success=success))
 
 #    return HttpResponse('deleted: {}'.format(ret))
     return HttpResponseRedirect('..')
 
 
+def process_files(request):
+    if request.method != 'POST':
+        return HttpResponse(status=405)
+    ret = []
+    for key, value in request.POST.items():
+        if re.match('[0-9]+$', key):
+            success = filehandler.process_file(int(key))
+            ret.append(dict(id=key, success=success))
+
+    return JsonResponse({
+        'success': True,
+        'results': ret
+
+    })
 
 
-views = [index, time, upload, delete_files]
+
+
+views = [index, time, upload, delete_files, process_files]

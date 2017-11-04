@@ -28,14 +28,12 @@ def delete_file(id_):
 
 
 def _process_file(file):
-    print("processing file!")
     blob = str(file.data.tobytes(), 'utf-8')
     ret = location_csv.blob_to_dict(blob)
     jd = JsonData.objects.create(
         data=json_to_bytes(ret),
         source=file)
     jd.save()
-    print("saved JsonData with id #{}".format(jd.id))
 
 
 
