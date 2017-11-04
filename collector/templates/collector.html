@@ -56,6 +56,11 @@
                 <input type="submit" value="Upload" name="uploadButton"/>
             </form>
         </div>
+        <script type="text/x-handlebars-template">
+            {% verbatim %}
+                {{ yeah }}
+            {% endverbatim %}
+        </script>
         <script type="text/javascript">
             (function() {
                 var htmlError = '<span style="color: red;" class="glyphicon glyphicon-alert"></span>';
@@ -65,6 +70,15 @@
                 function getCSRFToken() {
                     return $('[name=csrfmiddlewaretoken]')[0].value;
                 }
+
+                function renderTable(data) {
+
+                }
+
+                $.getJSON('/API/files/', function(ret) {
+                    renderTable(ret);
+                });
+
 
                 $(".file_status").each(function(idx, el) {
                     var $el = $(el),

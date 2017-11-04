@@ -17,19 +17,32 @@ from django.conf.urls import url
 from django.contrib import admin
 
 from collector.views import views as collector_views
+from collector.api import views as api_views
 
 urlpatterns = [
     url(r'^admin/', admin.site.urls),
 ]
 
-for handler in collector_views:
-    if not callable(handler):
-        continue
+def build_urls(handlers, prefix=None):
+    ret = []
+    for handler in handlers:
+        if not callable(handler):
+            continue
 
-    name = handler.__name__
-    if name == 'index':
-        m = r'^$'
-    else:
-        m = '^' + name
+        name = handler.__name__
+        if name == 'index':
+            if prefix:
+                m = '^' + prefix + ''
+            else:
+                m = '^$'
+        else:
+            if prefix:
+                m = '^' + prefix + '/' + name
+            else:
+                m = '^' + name
 
-    urlpatterns.append(url(m, handler, name=name))
+        ret.append(url(m, handler, name=name))
+    return ret
+
+urlpatterns += build_urls(collector_views)
+urlpatterns += build_urls(api_views, prefix='API')
