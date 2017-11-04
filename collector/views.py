@@ -1,6 +1,7 @@
 from django.shortcuts import render
 from django.template.loader import get_template
 from django.views.decorators.csrf import csrf_exempt
+from django.db.models import Count
 from django.http import (
     HttpResponse,
     HttpResponseRedirect
@@ -19,16 +20,8 @@ def time(request):
 
 def index(request):
     num_files = File.objects.count()
-#    files = File.objects.all()
-
-#    files = File.objects.filter(filetojsondata__file__isnull=False).extra(
-#        select={'processed': True}).union(
-#            File.objects.filter(filetojsondata__file__isnull=True).extra(
-#                select={'processed': False})).values()
-
-    files = File.objects.all()
-
-
+    # TODO: Count() can probably be replaced with something quicker
+    files = File.objects.annotate(processed=Count('jsondata')).values()
 
 
     return HttpResponse(render(

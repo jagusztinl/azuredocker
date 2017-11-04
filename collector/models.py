@@ -5,10 +5,6 @@ from django.db import models
 
     # Yeah
 
-class JsonData(models.Model):
-    created_at = models.DateTimeField(auto_now_add=True)
-    data = models.BinaryField()
-
 
 class File(models.Model):
     created_at = models.DateTimeField(auto_now_add=True)
@@ -20,8 +16,13 @@ class File(models.Model):
     datatype = models.CharField(max_length=1, choices=DATATYPES)
     data = models.BinaryField()
     size = models.BigIntegerField()
-    jsondata = models.OneToOneField(
-        JsonData, null=True, on_delete=models.CASCADE)
+
+
+class JsonData(models.Model):
+    created_at = models.DateTimeField(auto_now_add=True)
+    data = models.BinaryField()
+    source = models.OneToOneField(
+        File, null=True, on_delete=models.CASCADE, parent_link=True)
 
 
 #class FileToJsonData(models.Model):
