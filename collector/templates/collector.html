@@ -18,13 +18,14 @@
                     <th>Id</th>
                     <th>Name</th>
                     <th>Size</th>
-                    <th></th>
+                    <th>Processed</th>
                 {% for file in files %}
                     <tr>
                         <td><input type="checkbox" name="{{ file.id }}"></input></td>
                         <td>{{ file.id }}</td>
                         <td>{{ file.name }}</td>
                         <td>{{ file.size }}</td>
+                        <td>{{ file.jsondata }}</td>
                     </tr>
                 {% endfor %}
                 </table>

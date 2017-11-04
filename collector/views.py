@@ -19,7 +19,16 @@ def time(request):
 
 def index(request):
     num_files = File.objects.count()
+#    files = File.objects.all()
+
+#    files = File.objects.filter(filetojsondata__file__isnull=False).extra(
+#        select={'processed': True}).union(
+#            File.objects.filter(filetojsondata__file__isnull=True).extra(
+#                select={'processed': False})).values()
+
     files = File.objects.all()
+
+
 
 
     return HttpResponse(render(
