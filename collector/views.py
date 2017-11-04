@@ -8,7 +8,7 @@ from django.http import (
 )
 import datetime
 import re
-from .filehandler import save_file, delete_file
+from .filehandler import save_request_file, delete_file
 from .models import File
 
 # Create your views here.
@@ -23,7 +23,6 @@ def index(request):
     # TODO: Count() can probably be replaced with something quicker
     files = File.objects.annotate(processed=Count('jsondata')).values()
 
-
     return HttpResponse(render(
         request,
         'collector.html', dict(
@@ -37,7 +36,7 @@ def upload(request):
     if request.method == 'POST':
         for key in request.FILES.keys():
             for file in request.FILES.getlist(key):
-                ret.append(save_file(file))
+                ret.append(save_request_file(file))
 
         return HttpResponseRedirect('..')
 #        return HttpResponse('files: {}'.format(ret))
