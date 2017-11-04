@@ -6,6 +6,8 @@
         <link href='//fonts.googleapis.com/css?family=Lobster&subset=latin,latin-ext' rel='stylesheet' type='text/css'>
         <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.2.1/jquery.min.js"></script>
         <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js"></script>
+        {% load static %}
+        <script src="{% static "collector/browserified-handlebars.js" %}"></script>
         <style>
             .spinner {
               animation: 1s rotate infinite linear;
@@ -30,23 +32,7 @@
             Number of files uploaded: {{ num_files }}
             <form action="delete_files" method="post">
                 {% csrf_token %}
-                <table class="table table-responsive table-striped">
-                    <th></th>
-                    <th>Id</th>
-                    <th>Name</th>
-                    <th>Size</th>
-                    <th colspan="2">Processed</th>
-                {% for file in files %}
-                    <tr>
-                        <td><input type="checkbox" name="{{ file.id }}"></input></td>
-                        <td>{{ file.id }}</td>
-                        <td>{{ file.name }}</td>
-                        <td>{{ file.size }}</td>
-                        <td id="status_{{ file.id }}" class="file_status" data-orig-status="{{ file.processed }}">&nbsp;</td>
-                        <td><a href="javascript: return false;" class="process_button" data-id="{{ file.id }}" id="process_{{ file.id }}">Process</a></td>
-                    </tr>
-                {% endfor %}
-                </table>
+                <div id="filelist_container"></div>
                 <!-- Let's do this RESTy later -->
                 <input type="submit" value="Delete Selected"/>
             </form>
@@ -56,9 +42,25 @@
                 <input type="submit" value="Upload" name="uploadButton"/>
             </form>
         </div>
-        <script type="text/x-handlebars-template">
+        <script id="filelist_template" type="text/x-handlebars-template">
             {% verbatim %}
-                {{ yeah }}
+            <table class="table table-responsive table-striped">
+                <th></th>
+                <th>Id</th>
+                <th>Name</th>
+                <th>Size</th>
+                <th colspan="2">Processed</th>
+            {{#each files}}
+                <tr>
+                    <td><input type="checkbox" name="{{ file.id }}"></input></td>
+                    <td>{{ id }}</td>
+                    <td>{{ name }}</td>
+                    <td>{{ size }}</td>
+                    <td id="status_{{ id }}" class="file_status" data-orig-status="{{ processed }}">&nbsp;</td>
+                    <td><a href="javascript: return false;" class="process_button" data-id="{{ id }}" id="process_{{ id }}">Process</a></td>
+                </tr>
+            {{/each}}
+            </table>
             {% endverbatim %}
         </script>
         <script type="text/javascript">
@@ -72,6 +74,14 @@
                 }
 
                 function renderTable(data) {
+                    var tpl = Handlebars.compile(document.getElementById('filelist_template').innerHTML);
+                    var html = tpl({
+                        files: data
+                    });
+                    $('#filelist_container').html(html);
+                    afterRender();
+
+
 
                 }
 
@@ -80,36 +90,39 @@
                 });
 
 
-                $(".file_status").each(function(idx, el) {
-                    var $el = $(el),
-                        status = Number(el.getAttribute('data-orig-status'));
-                    if (status) {
-                        $el.html(htmlSuccess);
-                    }
-                });
-
-                $(".process_button").click(function(event) {
-                    var fileId = event.target.getAttribute('data-id');
-                    var args = {};
-                    args[fileId] = 'on';
-                    args.csrfmiddlewaretoken = getCSRFToken();
-                    $('#status_' + fileId).html(htmlProgress)
-
-                    $.post('process_files', args).done(function(jsonRes) {
-                        if (jsonRes.success) {
-                            jsonRes.results.forEach(function(entry) {
-                                $('#status_' + entry.id).html(entry.success ? htmlSuccess : htmlFailure);
-                            });
-                        } else {
-                            alert('error, got json response!');
+                function afterRender() {
+                    $(".file_status").each(function(idx, el) {
+                        var $el = $(el),
+                            status = Number(el.getAttribute('data-orig-status'));
+                        if (status) {
+                            $el.html(htmlSuccess);
                         }
-
-                    }).fail(function(res) {
-                        var $error = $(htmlError);
-                        $error.attr('title', res.responseText);
-                        $('#status_' + fileId).html($error);
                     });
-                });
+
+
+                    $(".process_button").click(function(event) {
+                        var fileId = event.target.getAttribute('data-id');
+                        var args = {};
+                        args[fileId] = 'on';
+                        args.csrfmiddlewaretoken = getCSRFToken();
+                        $('#status_' + fileId).html(htmlProgress);
+
+                        $.post('process_files', args).done(function(jsonRes) {
+                            if (jsonRes.success) {
+                                jsonRes.results.forEach(function(entry) {
+                                    $('#status_' + entry.id).html(entry.success ? htmlSuccess : htmlFailure);
+                                });
+                            } else {
+                                alert('error, got json response!');
+                            }
+
+                        }).fail(function(res) {
+                            var $error = $(htmlError);
+                            $error.attr('title', res.responseText);
+                            $('#status_' + fileId).html($error);
+                        });
+                    });
+                }
             }());
         </script>
     </body>
