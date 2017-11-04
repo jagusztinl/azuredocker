@@ -42,6 +42,16 @@
                 <input type="submit" value="Upload" name="uploadButton"/>
             </form>
         </div>
+        <script id="filelist_row_template" type="text/x-handlebars-template">
+            {% verbatim %}
+            <td><input type="checkbox" name="{{ file.id }}"></input></td>
+            <td>{{ id }}</td>
+            <td>{{ name }}</td>
+            <td>{{ size }}</td>
+            <td id="status_{{ id }}" class="file_status" data-orig-status="{{ processed }}">&nbsp;</td>
+            <td><a href="javascript: return false;" class="process_button" data-id="{{ id }}" id="process_{{ id }}">Process</a></td>
+            {% endverbatim %}
+        </script>
         <script id="filelist_template" type="text/x-handlebars-template">
             {% verbatim %}
             <table class="table table-responsive table-striped">
@@ -51,14 +61,9 @@
                 <th>Size</th>
                 <th colspan="2">Processed</th>
             {{#each files}}
-                <tr>
-                    <td><input type="checkbox" name="{{ file.id }}"></input></td>
-                    <td>{{ id }}</td>
-                    <td>{{ name }}</td>
-                    <td>{{ size }}</td>
-                    <td id="status_{{ id }}" class="file_status" data-orig-status="{{ processed }}">&nbsp;</td>
-                    <td><a href="javascript: return false;" class="process_button" data-id="{{ id }}" id="process_{{ id }}">Process</a></td>
-                </tr>
+            <tr id="row_{{ id }}">
+                {{> filelist_row }}
+            </tr>
             {{/each}}
             </table>
             {% endverbatim %}
@@ -73,16 +78,14 @@
                     return $('[name=csrfmiddlewaretoken]')[0].value;
                 }
 
+                var tpl = Handlebars.compile(document.getElementById('filelist_template').innerHTML);
+                Handlebars.registerPartial('filelist_row', document.getElementById('filelist_row_template').innerHTML);
                 function renderTable(data) {
-                    var tpl = Handlebars.compile(document.getElementById('filelist_template').innerHTML);
                     var html = tpl({
                         files: data
                     });
                     $('#filelist_container').html(html);
                     afterRender();
-
-
-
                 }
 
                 $.getJSON('/API/files/', function(ret) {
