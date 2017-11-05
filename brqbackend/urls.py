@@ -17,7 +17,7 @@ from django.conf.urls import url
 from django.contrib import admin
 
 from collector.views import views as collector_views
-from collector.api import views as api_views
+from collector import api
 
 urlpatterns = [
     url(r'^admin/', admin.site.urls),
@@ -32,7 +32,7 @@ def build_urls(handlers, prefix=None):
         name = handler.__name__
         if name == 'index':
             if prefix:
-                m = '^' + prefix + ''
+                m = '^' + prefix + '$'
             else:
                 m = '^$'
         else:
@@ -45,4 +45,4 @@ def build_urls(handlers, prefix=None):
     return ret
 
 urlpatterns += build_urls(collector_views)
-urlpatterns += build_urls(api_views, prefix='API')
+urlpatterns += api.urlpatterns

@@ -7,6 +7,8 @@ from django.http import (
     HttpResponseRedirect,
     JsonResponse,
 )
+from django.conf.urls import url
+
 import datetime
 import re
 import collector.filehandler as filehandler
@@ -15,7 +17,7 @@ from .models import File
 # Create your views here.
 
 @csrf_exempt
-def files(request):
+def file_all(request):
     # TODO: Count() can probably be replaced with something quicker
     files = File.objects.annotate(processed=Count('jsondata')).order_by('id')
 
@@ -30,5 +32,22 @@ def files(request):
 
     return JsonResponse(ret, safe=False)
 
+@csrf_exempt
+def file_single(request, item_id=None):
+    file = File.objects.filter(id=item_id).first()
+    method = request.method
+    if method == 'GET':
+        return JsonResponse(file.as_json(), safe=False)
+    if method == 'DELETE':
+        file.delete()
+        return JsonResponse({
+            'success': True
+        })
 
-views = [files]
+
+
+
+urlpatterns = [
+    url(r'^API/files/$', file_all),
+    url(r'^API/files/(?P<item_id>[0-9]+)$', file_single),
+]

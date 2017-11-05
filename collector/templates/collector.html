@@ -7,7 +7,6 @@
         <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.2.1/jquery.min.js"></script>
         <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js"></script>
         {% load static %}
-        <script src="{% static "collector/browserified-handlebars.js" %}"></script>
         <style>
             .spinner {
               animation: 1s rotate infinite linear;
@@ -29,13 +28,10 @@
             <h1><a href="/">Hello, world</a></h1>
         </div>
         <div class="content container">
+            {% csrf_token %}
             Number of files uploaded: {{ num_files }}
-            <form action="delete_files" method="post">
-                {% csrf_token %}
-                <div id="filelist_container"></div>
-                <!-- Let's do this RESTy later -->
-                <input type="submit" value="Delete Selected"/>
-            </form>
+            <div id="filelist_container"></div>
+            <button id="deleteButton">Delete selected</button>
             <form action="upload" method="post" enctype="multipart/form-data">
                 Select file to upload:
                 <input type="file" name="file" id="fileSelector" multiple/>
@@ -44,7 +40,7 @@
         </div>
         <script id="filelist_row_template" type="text/x-handlebars-template">
             {% verbatim %}
-            <td><input type="checkbox" name="{{ file.id }}"></input></td>
+            <td><input class="filelist_checkbox" type="checkbox" name="{{ file.id }}" data-id="{{ id }}"></input></td>
             <td>{{ id }}</td>
             <td>{{ name }}</td>
             <td>{{ size }}</td>
@@ -54,7 +50,7 @@
         </script>
         <script id="filelist_template" type="text/x-handlebars-template">
             {% verbatim %}
-            <table class="table table-responsive table-striped">
+            <table class="table table-responsive table-striped filelist-container">
                 <th></th>
                 <th>Id</th>
                 <th>Name</th>
@@ -68,65 +64,8 @@
             </table>
             {% endverbatim %}
         </script>
-        <script type="text/javascript">
-            (function() {
-                var htmlError = '<span style="color: red;" class="glyphicon glyphicon-alert"></span>';
-                var htmlProgress = '<span class="glyphicon glyphicon-refresh spinner"></span>';
-                var htmlSuccess = '<span style="color: green;" class="glyphicon glyphicon-ok"></span>';
-
-                function getCSRFToken() {
-                    return $('[name=csrfmiddlewaretoken]')[0].value;
-                }
-
-                var tpl = Handlebars.compile(document.getElementById('filelist_template').innerHTML);
-                Handlebars.registerPartial('filelist_row', document.getElementById('filelist_row_template').innerHTML);
-                function renderTable(data) {
-                    var html = tpl({
-                        files: data
-                    });
-                    $('#filelist_container').html(html);
-                    afterRender();
-                }
-
-                $.getJSON('/API/files/', function(ret) {
-                    renderTable(ret);
-                });
-
-
-                function afterRender() {
-                    $(".file_status").each(function(idx, el) {
-                        var $el = $(el),
-                            status = Number(el.getAttribute('data-orig-status'));
-                        if (status) {
-                            $el.html(htmlSuccess);
-                        }
-                    });
-
-
-                    $(".process_button").click(function(event) {
-                        var fileId = event.target.getAttribute('data-id');
-                        var args = {};
-                        args[fileId] = 'on';
-                        args.csrfmiddlewaretoken = getCSRFToken();
-                        $('#status_' + fileId).html(htmlProgress);
-
-                        $.post('process_files', args).done(function(jsonRes) {
-                            if (jsonRes.success) {
-                                jsonRes.results.forEach(function(entry) {
-                                    $('#status_' + entry.id).html(entry.success ? htmlSuccess : htmlFailure);
-                                });
-                            } else {
-                                alert('error, got json response!');
-                            }
-
-                        }).fail(function(res) {
-                            var $error = $(htmlError);
-                            $error.attr('title', res.responseText);
-                            $('#status_' + fileId).html($error);
-                        });
-                    });
-                }
-            }());
+        <script src="{% static "collector/browserified-handlebars.js" %}"></script>
+        <script type="text/javascript" src="{% static "collector/collector.js" %}">
         </script>
     </body>
 </html>

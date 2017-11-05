@@ -1,5 +1,5 @@
 from django.db import models
-
+import json
 # Create your models here.
 
 
@@ -23,12 +23,32 @@ class File(models.Model):
         else:
             return 0
 
+    @property
+    def jsondata_meta(self):
+        return [jd.as_json() for jd in JsonData.objects.filter(source=self.id)]
+
+    def as_json(self):
+        return {
+            'id': self.id,
+            'name': self.name,
+#            'data': self.data,
+            'size': self.size,
+            'jsondata': self.jsondata_meta
+        }
+
 
 class JsonData(models.Model):
     created_at = models.DateTimeField(auto_now_add=True)
     data = models.BinaryField()
     source = models.OneToOneField(
         File, null=True, on_delete=models.CASCADE, parent_link=True)
+
+    def as_json(self):
+        return {
+            'id': self.id,
+            'size': self.data.nbytes,
+            'data': json.loads(str(self.data.tobytes(), 'utf-8'))
+        }
 
 
 #class FileToJsonData(models.Model):
