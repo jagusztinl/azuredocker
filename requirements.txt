@@ -1,2 +1,5 @@
 Django>=1.8,<2.0
 psycopg2
+celery>=4.1,<5.0
+# Should maybe be separated:
+flower
