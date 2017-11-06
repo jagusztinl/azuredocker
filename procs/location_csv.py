@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 
 def line_to_dict(line):
-    p = line.split(",");
+    p = [c.strip() for c in line.split(",")]
     return {
         "ts": int(p[0]),
         "lat": float(p[1]),
@@ -17,7 +17,10 @@ def blob_to_dict(blob):
     lines = blob.splitlines()
     ret = []
     for idx, line in enumerate(lines):
-        ret.append(line_to_dict(line))
+        try:
+            ret.append(line_to_dict(line))
+        except Exception as e:
+            raise ValueError("Failed parsing on line {}: {}".format(idx, e))
     return ret
 
 

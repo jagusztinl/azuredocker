@@ -44,10 +44,16 @@ def file_single(request, item_id=None):
             'success': True
         })
 
-
+@csrf_exempt
+def task_state(request, task_id=None):
+    return JsonResponse({
+        "success": True,
+        "state": filehandler.get_task_state(task_id)
+    })
 
 
 urlpatterns = [
     url(r'^API/files/$', file_all),
     url(r'^API/files/(?P<item_id>[0-9]+)$', file_single),
+    url(r'^API/tasks/(?P<task_id>[a-z0-9\-]+)$', task_state),
 ]

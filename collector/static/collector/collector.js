@@ -1,5 +1,5 @@
 (function() {
-    var htmlError = '<span style="color: red;" class="glyphicon glyphicon-alert"></span>';
+    var htmlFailure = '<span style="color: red;" class="glyphicon glyphicon-alert"></span>';
     var htmlProgress = '<span class="glyphicon glyphicon-refresh spinner"></span>';
     var htmlSuccess = '<span style="color: green;" class="glyphicon glyphicon-ok"></span>';
 
@@ -74,14 +74,14 @@
             $.post('process_files', args).done(function(jsonRes) {
                 if (jsonRes.success) {
                     jsonRes.results.forEach(function(entry) {
-                        $('#status_' + entry.id).html(entry.success ? htmlSuccess : htmlFailure);
+                        $('#status_' + entry.id).html(entry.task_id ? htmlProgress : htmlFailure);
                     });
                 } else {
                     alert('error, got json response!');
                 }
 
             }).fail(function(res) {
-                var $error = $(htmlError);
+                var $error = $(htmlFailure);
                 $error.attr('title', res.responseText);
                 $('#status_' + fileId).html($error);
             });

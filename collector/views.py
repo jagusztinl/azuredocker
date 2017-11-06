@@ -62,13 +62,12 @@ def process_files(request):
     ret = []
     for key, value in request.POST.items():
         if re.match('[0-9]+$', key):
-            success = filehandler.process_file(int(key))
-            ret.append(dict(id=key, success=success))
+            task_id = filehandler.process_file(int(key))
+            ret.append(dict(id=key, task_id=task_id))
 
     return JsonResponse({
         'success': True,
         'results': ret
-
     })
 
 

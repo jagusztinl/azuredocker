@@ -7,5 +7,5 @@ up:
 stop:
 	docker-compose stop
 
-shell-web:
+shell:
 	docker exec -ti django_web /bin/bash

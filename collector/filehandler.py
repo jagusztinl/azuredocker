@@ -1,5 +1,6 @@
 from .models import File, JsonData
-from procs import location_csv
+from taskqueue import tasks
+from celery.result import AsyncResult
 import json
 
 def json_to_bytes(jsondata):
@@ -26,20 +27,13 @@ def delete_file(id_):
         return True
     return False
 
-
-def _process_file(file):
-    blob = str(file.data.tobytes(), 'utf-8')
-    ret = location_csv.blob_to_dict(blob)
-    jd = JsonData.objects.create(
-        data=json_to_bytes(ret),
-        source=file)
-    jd.save()
-
-
-
 def process_file(id_):
-    file = File.objects.filter(id=id_).first()
-    if file:
-        _process_file(file)
-        return True
-    return False
+    result = tasks.blob_to_dict.delay(id_)
+    if result:
+        return result.id
+    return None
+
+def get_task_state(task_id):
+    res = AsyncResult(task_id, app=tasks.app)
+    return res.state
+
