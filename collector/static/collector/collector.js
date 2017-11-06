@@ -54,6 +54,44 @@
 
     $("#deleteButton").click(deleteSelected);
 
+    var pendingTasks = [];
+
+    function pollStatus() {
+    	var task = pendingTasks[0];
+    	if (!task) {
+    		return;
+    	}
+    	$.getJSON('/API/tasks/' + task.taskId, function(status) {
+    		var html;
+    		switch (status.state) {
+    			case "SUCCESS":
+    				html = htmlSuccess;
+    				break;
+    			case "FAILURE":
+    				html = htmlFailure;
+    				break;
+    			default:
+    				html = htmlProgress;
+    				break;
+    		}
+    		if (status.state === "SUCCESS" || status.state === "FAILURE") {
+    			pendingTasks.shift();
+    		}
+
+	        $('#status_' + task.fileId).html(html);
+    	});
+    }
+
+
+    setInterval(pollStatus, 500);
+
+    function addPending(fileId, taskId) {
+    	pendingTasks.push({
+    		fileId: fileId,
+    		taskId: taskId
+    	});
+    }
+
     function afterRender() {
         $(".file_status").each(function(idx, el) {
             var $el = $(el),
@@ -75,6 +113,8 @@
                 if (jsonRes.success) {
                     jsonRes.results.forEach(function(entry) {
                         $('#status_' + entry.id).html(entry.task_id ? htmlProgress : htmlFailure);
+
+                        addPending(fileId, entry.task_id);
                     });
                 } else {
                     alert('error, got json response!');

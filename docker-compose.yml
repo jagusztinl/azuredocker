@@ -9,6 +9,13 @@ services:
       - RABBITMQ_DEFAULT_PASS=kanin
     ports:
       - "5672:5672"
+
+  redis:
+    hostname: redis
+    image: redis:alpine
+    expose:
+      - "6379"
+
   db:
     image: postgres
   web:
@@ -27,6 +34,7 @@ services:
           - rabbit
       depends_on:
           - rabbit
+          - redis
       entrypoint: celery -A taskqueue worker --app=taskqueue.celery_app:app --loglevel=info
 
   nginx:
