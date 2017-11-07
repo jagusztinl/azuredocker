@@ -27,6 +27,12 @@ DEBUG = True
 
 ALLOWED_HOSTS = ["*"]
 
+LOGGING = {
+    'version': 1,
+    'root': {
+        'level': 'DEBUG',
+    }
+}
 
 # Application definition
 

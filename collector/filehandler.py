@@ -14,6 +14,7 @@ def save_request_file(request_file):
         data=rf.read(),
     )
     fileModel.save()
+#    process_file(fileModel.id);
     return dict(
         size=rf.size,
         name=rf.name,

@@ -7,6 +7,7 @@ from django.http import (
     HttpResponseRedirect,
     JsonResponse,
 )
+import logging
 import datetime
 import re
 import collector.filehandler as filehandler
@@ -21,13 +22,11 @@ def time(request):
 
 def index(request):
     num_files = File.objects.count()
-    # TODO: Count() can probably be replaced with something quicker
-    files = File.objects.annotate(processed=Count('jsondata')).order_by('id')
+
     return HttpResponse(render(
         request,
         'collector.html', dict(
         num_files=num_files,
-        files=files,
     )))
 
 @csrf_exempt

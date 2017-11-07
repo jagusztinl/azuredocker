@@ -15,13 +15,19 @@ class File(models.Model):
     name = models.CharField(max_length=256)
     datatype = models.CharField(max_length=1, choices=DATATYPES)
     data = models.BinaryField()
+    size = models.BigIntegerField(default=-1)
 
-    @property
-    def size(self):
-        if self.data:
-            return self.data.nbytes
-        else:
-            return 0
+    def save(self, *args, **kwargs):
+        if self.size < 0 and self.__dict__.get('data'):
+            if hasattr(self.data, 'nbytes'):
+                # If we have read from the database
+                self.size = self.data.nbytes
+            else:
+                # If have only bytes
+                self.size = len(self.data)
+
+        super().save(*args, **kwargs)
+
 
     @property
     def jsondata_meta(self):
@@ -31,9 +37,8 @@ class File(models.Model):
         return {
             'id': self.id,
             'name': self.name,
-#            'data': self.data,
             'size': self.size,
-            'jsondata': self.jsondata_meta
+            'jsondata': self.jsondata and self.jsondata.id  #self.jsondata_meta
         }
 
 
