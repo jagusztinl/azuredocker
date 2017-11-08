@@ -1,27 +1,13 @@
 <html>
     <head>
+        {% load static %}
         <title>Hello, world!</title>
-        <link rel="stylesheet" href="//maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css">
-        <link rel="stylesheet" href="//maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap-theme.min.css">
-        <link href='//fonts.googleapis.com/css?family=Lobster&subset=latin,latin-ext' rel='stylesheet' type='text/css'>
+        <link rel="stylesheet" href="//maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css"/>
+        <link rel="stylesheet" href="//maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap-theme.min.css"/>
+        <link href='//fonts.googleapis.com/css?family=Lobster&subset=latin,latin-ext' rel='stylesheet' type='text/css'/>
+        <link rel="stylesheet" href="{% static "collector/collector.css" %}"/>
         <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.2.1/jquery.min.js"></script>
         <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js"></script>
-        {% load static %}
-        <style>
-            .spinner {
-              animation: 1s rotate infinite linear;
-            }
-
-
-            @keyframes rotate {
-              from {
-                transform: rotate(0deg);
-              }
-              to {
-                transform: rotate(360deg);
-              }
-            }
-        </style>
   </head>
     <body>
         <div class="page-header">
@@ -51,16 +37,20 @@
         <script id="filelist_template" type="text/x-handlebars-template">
             {% verbatim %}
             <table class="table table-responsive table-striped filelist-container">
-                <th></th>
-                <th>Id</th>
-                <th>Name</th>
-                <th>Size</th>
-                <th colspan="2">Processed</th>
-            {{#each files}}
-            <tr id="row_{{ id }}">
-                {{> filelist_row }}
-            </tr>
-            {{/each}}
+                <thead>
+                    <th></th>
+                    <th>Id</th>
+                    <th>Name</th>
+                    <th>Size</th>
+                    <th colspan="2">Processed</th>
+                </thead>
+                <tbody>
+                    {{#each files}}
+                    <tr id="row_{{ id }}">
+                        {{> filelist_row }}
+                    </tr>
+                    {{/each}}
+                </tbody>
             </table>
             {% endverbatim %}
         </script>

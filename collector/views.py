@@ -29,6 +29,13 @@ def index(request):
         num_files=num_files,
     )))
 
+def vue(request):
+
+    return HttpResponse(render(
+        request,
+        'vue.html'
+    ))
+
 @csrf_exempt
 def upload(request):
     ret = []
@@ -72,4 +79,4 @@ def process_files(request):
 
 
 
-views = [index, time, upload, delete_files, process_files]
+views = [index, time, upload, delete_files, process_files, vue]

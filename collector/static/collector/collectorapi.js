@@ -1,0 +1,10 @@
+window.CollectorAPI = (function() {
+	
+
+
+
+
+	return {
+
+	};
+}());

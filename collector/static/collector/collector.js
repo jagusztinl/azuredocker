@@ -18,6 +18,19 @@
         afterRender();
     }
 
+    var API = {
+        files: {
+            get: function(callback) {
+                $.getJSON('/API/files/', function(ret) {
+                    if (callback) {
+                        return callback(ret);
+                    }
+                });
+            }
+        }
+    };
+
+
     function refreshFileList() {
 	    $.getJSON('/API/files/', function(ret) {
 	        renderFileList(ret);

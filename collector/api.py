@@ -6,12 +6,14 @@ from django.http import (
     HttpResponse,
     HttpResponseRedirect,
     JsonResponse,
+    Http404,
 )
 from django.conf.urls import url
+from rest_framework.decorators import api_view
+from rest_framework.response import Response
 
 import datetime
 import time
-import re
 import collector.filehandler as filehandler
 from .models import File
 import logging as log
@@ -27,6 +29,7 @@ class Timer(object):
         return "{:3.0f}ms".format((time.time() - self.start) * 1000.0)
 
 
+@api_view(['GET'])
 @csrf_exempt
 def file_all(request):
     # TODO: Count() can probably be replaced with something quicker
@@ -38,37 +41,42 @@ def file_all(request):
 
 #    log.info("query: {}".format(files.query))
 
+    log.debug("host: {}".format(request.get_host()))
+
     log.debug("Time for querying files: {}".format(startTimer))
 
     log.debug("Time in file_all before serializing: {}".format(startTimer))
 
-    return JsonResponse(list(files), safe=False)
+    return Response(list(files))
 
+@api_view(['GET', 'DELETE'])
 @csrf_exempt
 def file_single(request, item_id=None):
-    file = File.objects.get(id=item_id)
-    method = request.method
-    if method == 'GET':
-        return JsonResponse(file.as_json(), safe=False)
-    if method == 'DELETE':
-        file.delete()
-        return JsonResponse({
-            'success': True
-        })
-
-@csrf_exempt
-def file_single_jsondata(request, item_id=None):
-    if request.method != 'GET':
-        return HttpResponse(status=405)
     try:
         file = File.objects.get(id=item_id)
     except File.DoesNotExist:
-        return HttpResponse(status=404)
+        raise Http404()
+    method = request.method
+    if method == 'GET':
+        return Response(file.as_json())
+    if method == 'DELETE':
+        file.delete()
+        return Response({
+            'success': True
+        })
+
+@api_view(['GET'])
+@csrf_exempt
+def file_single_jsondata(request, item_id=None):
+    try:
+        file = File.objects.get(id=item_id)
+    except File.DoesNotExist:
+        raise Http404()
 
     if not file.jsondata_meta:
-        return HttpResponse(status=404)
+        raise Http404()
 
-    return JsonResponse(file.jsondata.as_json()['data'], safe=False)
+    return Response(file.jsondata.as_json()['data'])
 
 @csrf_exempt
 def task_state(request, task_id=None):
