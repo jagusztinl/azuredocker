@@ -5,8 +5,8 @@ services:
     hostname: rabbit
     image: rabbitmq:latest
     environment:
-      - RABBITMQ_DEFAULT_USER=admin
-      - RABBITMQ_DEFAULT_PASS=kanin
+      - RABBITMQ_DEFAULT_USER=${RABBITMQ_USER}
+      - RABBITMQ_DEFAULT_PASS=${RABBITMQ_PASS}
     ports:
       - "5672:5672"
 
@@ -20,6 +20,9 @@ services:
     image: postgres
   web:
     build: .
+    environment:
+      - RABBITMQ_USER=${RABBITMQ_USER}
+      - RABBITMQ_PASS=${RABBITMQ_PASS}
     command: python3 manage.py runserver 0.0.0.0:3000
     container_name: django_web
     ports:
@@ -30,6 +33,9 @@ services:
       build:
         context: .
         dockerfile: Dockerfile
+      environment:
+        - RABBITMQ_USER=${RABBITMQ_USER}
+        - RABBITMQ_PASS=${RABBITMQ_PASS}
       links:
           - rabbit
       depends_on:
@@ -50,8 +56,11 @@ services:
     build:
       context: .
       dockerfile: Dockerfile
+    environment:
+      - RABBITMQ_USER=${RABBITMQ_USER}
+      - RABBITMQ_PASS=${RABBITMQ_PASS}
     depends_on:
       - rabbit
-    entrypoint: celery flower -A taskqueue --app=taskqueue.celery_app:app --broker=amqp://admin:kanin@rabbit:5672// --port=5000
+    entrypoint: celery flower -A taskqueue --app=taskqueue.celery_app:app --broker=amqp://${RABBITMQ_USER}:${RABBITMQ_PASS}@rabbit:5672// --port=5000
     ports:
       - "5000:5000"

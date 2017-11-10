@@ -1,0 +1,3 @@
+export RABBITMQ_PASS=
+export RABBITMQ_USER=
+
