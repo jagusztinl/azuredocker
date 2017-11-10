@@ -45,7 +45,7 @@ def upload(request):
     if request.method == 'POST':
         for key in request.FILES.keys():
             for file in request.FILES.getlist(key):
-                ret.append(filehandler.save_request_file(file))
+                ret.append(filehandler.save_request_file(file, request.user))
 
         return HttpResponseRedirect('..')
 #        return HttpResponse('files: {}'.format(ret))

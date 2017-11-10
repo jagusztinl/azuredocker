@@ -6,12 +6,13 @@ import json
 def json_to_bytes(jsondata):
     return bytes(str(json.dumps(jsondata)), 'utf-8')
 
-def save_request_file(request_file):
+def save_request_file(request_file, owner):
     """ Save a file from a request """
     rf = request_file
     fileModel = File(
         name=rf.name,
         data=rf.read(),
+        owner=owner,
     )
     fileModel.save()
 #    process_file(fileModel.id);

@@ -68,7 +68,7 @@ class Timer(object):
 def file_all(request):
     """Lists all files readable by the current user"""
     files = File.objects.values(
-        'id', 'name', 'created_at', 'jsondata', 'size').order_by('id')
+        'id', 'name', 'created_at', 'jsondata', 'owner', 'size').order_by('id')
 
     annotated_files = annotate_urls(files, request=request, tpl="files/{id}")
 

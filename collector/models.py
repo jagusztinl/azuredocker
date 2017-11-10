@@ -1,4 +1,5 @@
 from django.db import models
+from django.contrib.auth.models import User
 import json
 # Create your models here.
 
@@ -11,15 +12,27 @@ class File(models.Model):
     Stores an uploaded file. Related to :model:`collector.JsonData` which
     stores the derived JSON data if CSV parsing was successful.
     """
-    created_at = models.DateTimeField(auto_now_add=True)
     DATATYPES=(
         ('L', 'Location CSV'),
         ('A', 'Accelerometer CSV'),
     )
-    name = models.CharField(max_length=256)
+    created_at = models.DateTimeField(auto_now_add=True)
     datatype = models.CharField(max_length=1, choices=DATATYPES)
-    data = models.BinaryField()
-    size = models.BigIntegerField(default=-1)
+    data = models.BinaryField(help_text='The file contents')
+    name = models.CharField(
+        max_length=256,
+        help_text='File name'
+    )
+    owner = models.ForeignKey(
+        User,
+        on_delete=models.CASCADE,
+        help_text='User owning this file',
+    )
+    size = models.BigIntegerField(
+        default=-1,
+        help_text='The size of the file, derived from the data field '
+                  'and stored for speed'
+    )
 
     def save(self, *args, **kwargs):
         if self.size < 0 and self.__dict__.get('data'):
@@ -45,6 +58,7 @@ class File(models.Model):
             'id': self.id,
             'name': self.name,
             'size': self.size,
+            'owner': self.owner,
             'jsondata': None,
         }
         try:
