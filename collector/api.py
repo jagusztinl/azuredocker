@@ -2,6 +2,8 @@ from django.shortcuts import render
 #from django.template.loader import get_template
 from django.views.decorators.csrf import csrf_exempt
 from django.contrib.auth.decorators import login_required
+import django.db.models as models
+
 from django.http import (
     HttpResponse,
     HttpResponseRedirect,
@@ -18,7 +20,18 @@ import collector.filehandler as filehandler
 from .models import File
 import logging as log
 
+BASE_URL = "API/"
+
+
+def annotate_url(items, request=None, tpl=None):
+    host = request.get_host()
+    tpl = "http://{}/{}{}".format(host, BASE_URL, tpl)
+    for item in items:
+        item['url'] = tpl.format(**item)
+
+
 # Create your views here.
+
 
 
 class Timer(object):
@@ -37,7 +50,11 @@ def file_all(request):
 #    files = File.objects.annotate(processed=Count('jsondata')).order_by('id')
     startTimer = Timer()
 
-    files = File.objects.values('id', 'name', 'created_at', 'jsondata', 'size').order_by('id')
+    files = File.objects.values(
+        'id', 'name', 'created_at', 'jsondata', 'size').order_by('id')
+
+    annotate_url(files, request=request, tpl="files/{id}")
+
 #    files = [f.as_json() for f in File.objects.all().order_by('id')]
 
 #    log.info("query: {}".format(files.query))
@@ -91,8 +108,9 @@ def task_state(request, task_id=None):
 
 
 urlpatterns = [
-    url(r'^API/files/$', file_all),
-    url(r'^API/files/(?P<item_id>[0-9]+)$', file_single),
-    url(r'^API/files/(?P<item_id>[0-9]+)/jsondata$', file_single_jsondata),
-    url(r'^API/tasks/(?P<task_id>[a-z0-9\-]+)$', task_state),
+    url(r'^{}files/$'.format(BASE_URL), file_all),
+    url(r'^{}files/(?P<item_id>[0-9]+)$'.format(BASE_URL), file_single),
+    url(r'^{}files/(?P<item_id>[0-9]+)/jsondata$'.format(BASE_URL),
+        file_single_jsondata),
+    url(r'^{}tasks/(?P<task_id>[a-z0-9\-]+)$'.format(BASE_URL), task_state),
 ]

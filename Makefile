@@ -7,8 +7,11 @@ up:
 stop:
 	docker-compose stop
 
+log:
+	docker-compose logs --follow web
+
 shell:
-	docker exec -ti django_web /bin/bash
+	docker-compose exec web /bin/bash
 prod:
 	docker-compose -f docker-compose.yml -f docker-compose.prod.yml down
 	docker-compose -f docker-compose.yml -f docker-compose.prod.yml build

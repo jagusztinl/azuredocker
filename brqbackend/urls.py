@@ -20,12 +20,19 @@ from django.contrib.auth import views as auth_views
 from collector.views import views as collector_views
 from collector import api
 
+from brqbackend import settings
+
 urlpatterns = [
     url(r'^admin/', admin.site.urls),
     url(r'^login/$', auth_views.login, {'template_name': 'login.html'}, name='login'),
     url(r'^logout/$', auth_views.logout, name='logout'),
     url(r'^api-auth/', include('rest_framework.urls', namespace='rest_framework'))
 ]
+
+if settings.USE_DOCS:
+    urlpatterns.insert(
+        0, url(r'^admin/doc/', include('django.contrib.admindocs.urls')))
+
 
 def build_urls(handlers, prefix=None):
     ret = []
