@@ -23,7 +23,7 @@ services:
     environment:
       - RABBITMQ_USER=${RABBITMQ_USER}
       - RABBITMQ_PASS=${RABBITMQ_PASS}
-    command: python3 manage.py runserver 0.0.0.0:3000
+    command: /bin/bash startserver.sh
     container_name: django_web
     ports:
       - "3000:3000"
@@ -44,7 +44,10 @@ services:
       entrypoint: celery -A taskqueue worker --app=taskqueue.celery_app:app --loglevel=info
 
   nginx:
-    build: ./nginx
+    build:
+      context: ./nginx
+      args:
+        - HTPASSWD=${HTPASSWD}
     container_name: nginx
     ports:
       - "80:80"
@@ -61,6 +64,6 @@ services:
       - RABBITMQ_PASS=${RABBITMQ_PASS}
     depends_on:
       - rabbit
-    entrypoint: celery flower -A taskqueue --app=taskqueue.celery_app:app --broker=amqp://${RABBITMQ_USER}:${RABBITMQ_PASS}@rabbit:5672// --port=5000
+    entrypoint: celery flower -A taskqueue --url_prefix=flower --app=taskqueue.celery_app:app --broker=amqp://${RABBITMQ_USER}:${RABBITMQ_PASS}@rabbit:5672// --port=5000
     ports:
       - "5000:5000"

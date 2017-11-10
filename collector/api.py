@@ -1,7 +1,7 @@
 from django.shortcuts import render
 #from django.template.loader import get_template
 from django.views.decorators.csrf import csrf_exempt
-from django.db.models import Count
+from django.contrib.auth.decorators import login_required
 from django.http import (
     HttpResponse,
     HttpResponseRedirect,
@@ -30,6 +30,7 @@ class Timer(object):
 
 
 @api_view(['GET'])
+@login_required
 @csrf_exempt
 def file_all(request):
     # TODO: Count() can probably be replaced with something quicker
@@ -50,6 +51,7 @@ def file_all(request):
     return Response(list(files))
 
 @api_view(['GET', 'DELETE'])
+@login_required
 @csrf_exempt
 def file_single(request, item_id=None):
     try:
@@ -66,6 +68,7 @@ def file_single(request, item_id=None):
         })
 
 @api_view(['GET'])
+@login_required
 @csrf_exempt
 def file_single_jsondata(request, item_id=None):
     try:
@@ -79,6 +82,7 @@ def file_single_jsondata(request, item_id=None):
     return Response(file.jsondata.as_json()['data'])
 
 @csrf_exempt
+@login_required
 def task_state(request, task_id=None):
     return JsonResponse({
         "success": True,

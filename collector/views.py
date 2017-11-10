@@ -1,7 +1,7 @@
 from django.shortcuts import render
 #from django.template.loader import get_template
 from django.views.decorators.csrf import csrf_exempt
-from django.db.models import Count
+from django.contrib.auth.decorators import login_required
 from django.http import (
     HttpResponse,
     HttpResponseRedirect,
@@ -20,6 +20,7 @@ def time(request):
     html = "<html><body>It is now %s.</body></html>" % now
     return HttpResponse(html)
 
+@login_required
 def index(request):
     num_files = File.objects.count()
 
@@ -29,6 +30,7 @@ def index(request):
         num_files=num_files,
     )))
 
+@login_required
 def vue(request):
 
     return HttpResponse(render(
@@ -37,6 +39,7 @@ def vue(request):
     ))
 
 @csrf_exempt
+@login_required
 def upload(request):
     ret = []
     if request.method == 'POST':
@@ -49,6 +52,7 @@ def upload(request):
     else:
         return HttpResponseRedirect('..')
 
+@login_required
 def delete_files(request):
     if request.method != 'POST':
         return HttpResponse(status=405)
@@ -62,6 +66,7 @@ def delete_files(request):
     return HttpResponseRedirect('..')
 
 
+@login_required
 def process_files(request):
     if request.method != 'POST':
         return HttpResponse(status=405)
