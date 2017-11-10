@@ -20,15 +20,35 @@ import collector.filehandler as filehandler
 from .models import File
 import logging as log
 
+
 BASE_URL = "API/"
 
 
-def annotate_url(items, request=None, tpl=None):
+def annotate_urls(items, request=None, tpl=None, key='url'):
+    """
+    Returns a new list from dicts with annotation. This does
+
+    :param items: list of dicts to be annotated (left untouched)
+    :param request: the request object used to derive hostname etc
+    :param tpl: template with named objects like {id}
+    :param key: key to add, defaults to 'url'
+    :returns: a list of annotated dicts.
+    """
     host = request.get_host()
     tpl = "http://{}/{}{}".format(host, BASE_URL, tpl)
+    ret = []
     for item in items:
-        item['url'] = tpl.format(**item)
+        item_copy = {}
+        item_copy.update(item)
+        item_copy[key] = tpl.format(**item)
+        ret.append(item_copy)
+    return ret
 
+def annotate_url(item, request=None, tpl=None, key='url'):
+    """
+    Convinience function for a single item, see @annotate_urls
+    """
+    return annotate_urls([item], request=request, tpl=tpl, key=key)[0]
 
 # Create your views here.
 
@@ -46,38 +66,37 @@ class Timer(object):
 @login_required
 @csrf_exempt
 def file_all(request):
-    # TODO: Count() can probably be replaced with something quicker
-#    files = File.objects.annotate(processed=Count('jsondata')).order_by('id')
-    startTimer = Timer()
-
+    """Lists all files readable by the current user"""
     files = File.objects.values(
         'id', 'name', 'created_at', 'jsondata', 'size').order_by('id')
 
-    annotate_url(files, request=request, tpl="files/{id}")
+    annotated_files = annotate_urls(files, request=request, tpl="files/{id}")
 
-#    files = [f.as_json() for f in File.objects.all().order_by('id')]
-
-#    log.info("query: {}".format(files.query))
-
-    log.debug("host: {}".format(request.get_host()))
-
-    log.debug("Time for querying files: {}".format(startTimer))
-
-    log.debug("Time in file_all before serializing: {}".format(startTimer))
-
-    return Response(list(files))
+    return Response(    annotated_files)
 
 @api_view(['GET', 'DELETE'])
 @login_required
 @csrf_exempt
 def file_single(request, item_id=None):
+    """Shows details of a single file"""
     try:
         file = File.objects.get(id=item_id)
     except File.DoesNotExist:
         raise Http404()
     method = request.method
     if method == 'GET':
-        return Response(file.as_json())
+#        return Response(file.as_json())
+        ret = file.as_json()
+        if ret.get('jsondata'):
+            return Response(annotate_url(
+                ret,
+                request=request,
+                tpl='files/{id}/jsondata',
+                key='jsondata_url'))
+        else:
+            ret['jsondata_url'] = None
+            return Response(ret)
+
     if method == 'DELETE':
         file.delete()
         return Response({

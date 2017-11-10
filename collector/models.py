@@ -7,6 +7,10 @@ import json
 
 
 class File(models.Model):
+    """
+    Stores an uploaded file. Related to :model:`collector.JsonData` which
+    stores the derived JSON data if CSV parsing was successful.
+    """
     created_at = models.DateTimeField(auto_now_add=True)
     DATATYPES=(
         ('L', 'Location CSV'),
@@ -34,31 +38,42 @@ class File(models.Model):
         return [jd.as_json() for jd in JsonData.objects.filter(source=self.id)]
 
     def as_json(self):
-        return {
+        """
+        :returns: a json representation of the model
+        """
+        ret = {
             'id': self.id,
             'name': self.name,
             'size': self.size,
-            'jsondata': self.jsondata and self.jsondata.id  #self.jsondata_meta
+            'jsondata': None,
         }
+        try:
+            ret['jsondata'] = self.jsondata.id
+        except:
+            pass
+
+        return ret
 
 
 class JsonData(models.Model):
+    """
+    Stores json data derived from a :model:`collector.File`
+    """
     created_at = models.DateTimeField(auto_now_add=True)
     data = models.BinaryField()
     source = models.OneToOneField(
         File, null=True, on_delete=models.CASCADE, parent_link=True)
 
     def as_json(self):
+        """
+        :returns: a json representation of the model
+        """
         return {
             'id': self.id,
             'size': self.data.nbytes,
             'data': json.loads(str(self.data.tobytes(), 'utf-8'))
         }
 
-
-#class FileToJsonData(models.Model):
-#    file = models.ForeignKey(File, on_delete=models.CASCADE)
-#    jsondata = models.ForeignKey(JsonData, on_delete=models.CASCADE)
 
 
 
