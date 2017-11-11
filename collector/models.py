@@ -87,8 +87,3 @@ class JsonData(models.Model):
             'size': self.data.nbytes,
             'data': json.loads(str(self.data.tobytes(), 'utf-8'))
         }
-
-
-
-
-

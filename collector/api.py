@@ -100,14 +100,23 @@ def file_single(request, item_id=None):
     if method == 'GET':
         ret = file.as_json()
         if ret.get('jsondata'):
-            return Response(annotate_url(
+            ret = annotate_url(
                 ret,
                 request=request,
                 tpl='files/{id}/jsondata',
-                key='jsondata_url'))
+                key='jsondata_url',
+            )
         else:
             ret['jsondata_url'] = None
-            return Response(ret)
+
+        ret = annotate_url(
+            ret,
+            request=request,
+            tpl='files/{id}/data',
+            key='data_url'
+        )
+
+        return Response(ret)
 
     if method == 'DELETE':
         file.delete()
@@ -127,6 +136,30 @@ def file_single_jsondata(request, item_id=None):
         raise Http404()
 
     return Response(file.jsondata.as_json()['data'])
+
+
+#@api_view(['GET'])
+@login_required
+def file_data(request, item_id=None):
+    try:
+        file = File.objects.get(id=item_id)
+    except File.DoesNotExist:
+        raise Http404()
+
+    response = HttpResponse(file.data)
+    response['Content-Type'] = "binary/octet-stream"
+    response['Content-Disposition'] = "attachment; filename='{}'".format(
+        # TODO: urlencode
+        file.name
+    )
+#    response['X-Sendfile'] = file.data
+
+#    if not file.:
+#        raise Http404()
+#    return HttpResponse()
+    return response
+
+#    return Response(file.jsondata.as_json()['data'])
 
 
 @api_view(['GET'])
@@ -151,6 +184,7 @@ def task_single(request, task_id=None):
 urlpatterns = [
     url(r'^{}files/$'.format(BASE_URL), file_all),
     url(r'^{}files/(?P<item_id>[0-9]+)$'.format(BASE_URL), file_single),
+    url(r'^{}files/(?P<item_id>[0-9]+)/data$'.format(BASE_URL), file_data),
     url(r'^{}files/(?P<item_id>[0-9]+)/jsondata$'.format(BASE_URL),
         file_single_jsondata),
     url(r'^{}tasks/$'.format(BASE_URL), task_all),
