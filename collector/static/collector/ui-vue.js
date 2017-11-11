@@ -6,11 +6,6 @@
     }
 
 
-    function refreshFileList(callback) {
-        $.getJSON('/API/files/', function(ret) {
-            callback(ret);
-        });
-    }
 
 
     var HTML_STATUS = {
@@ -144,6 +139,9 @@
             '</tr>',
             '<tbody>',
             '<file-item v-for="file in files" v-bind:file="file.file" v-bind:viewState="file.viewState" v-bind:actions="actions"></file-item>',
+            '<tr v-if="files.length === 0">',
+            '<td colspan="7">Loading...</td>',
+            '</tr>',
             '</tbody>',
             '</table>'
         ].join("")
@@ -167,7 +165,33 @@
             pollInterval: 2000,
             viewState: {}
         },
+        created: function() {
+            this.refreshFileList(function(files) {
+                app.files = files.map(function(file) {
+                    return {
+                        file: file,
+                        viewState: {
+                            progress: false,
+                            expanded: file.id == 15,
+                            checked: false
+                        }
+                    };
+                });
+            });
+        },
+        mounted: function() {
+            this.pollTasks();
+        },
+        destroyed: function() {
+            // stop polling
+
+        },
         methods: {
+            refreshFileList: function(callback) {
+                $.getJSON('/API/files/', function(ret) {
+                    callback(ret);
+                });
+            },
             process: function(id) {
                 this.files.forEach(function(item) {
                     var file = item.file, viewState = item.viewState;
@@ -243,33 +267,9 @@
                     });
                 });
             },
-        },
-        created: function() {
-            this.pollTasks();
-        },
-        destroyed: function() {
-
         }
-
     });
 
-    refreshFileList(function(files) {
-    	/*
-    	files.forEach(function(file) {
-    		app.states[file.id] = '';
-    	});
-    	*/
-    	app.files = files.map(function(file) {
-            return {
-                file: file,
-                viewState: {
-                    progress: false,
-                    expanded: file.id == 15,
-                    checked: false
-                }
-            };
-    	});
-    });
 
     window.app = app;
 
