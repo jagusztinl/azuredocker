@@ -19,6 +19,11 @@ class File(models.Model):
     created_at = models.DateTimeField(auto_now_add=True)
     datatype = models.CharField(max_length=1, choices=DATATYPES)
     data = models.BinaryField(help_text='The file contents')
+    error = models.CharField(
+        max_length=255,
+        help_text='Last error message',
+        default='',
+    )
     name = models.CharField(
         max_length=256,
         help_text='File name'
@@ -56,9 +61,11 @@ class File(models.Model):
         """
         ret = {
             'id': self.id,
+            'created_at': self.created_at,
             'name': self.name,
             'size': self.size,
             'owner': self.owner.id,
+            'error': self.error,
             'jsondata': None,
         }
         try:

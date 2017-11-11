@@ -13,12 +13,21 @@ def json_to_bytes(jsondata):
     return bytes(str(json.dumps(jsondata)), 'utf-8')
 
 def _process_file(file):
-    blob = str(file.data.tobytes(), 'utf-8')
-    ret = location_csv.blob_to_dict(blob)
+    try:
+        blob = str(file.data.tobytes(), 'utf-8')
+        ret = location_csv.blob_to_dict(blob)
+    except Exception as e:
+        file.error = str(e)
+        file.save()
+        raise
+
     jd = JsonData.objects.create(
         data=json_to_bytes(ret),
         source=file)
     jd.save()
+
+    file.error = ''
+    file.save()
 
 
 @app.task

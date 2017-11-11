@@ -2,6 +2,7 @@
     var htmlFailure = '<span style="color: red;" class="glyphicon glyphicon-alert"></span>';
     var htmlProgress = '<span class="glyphicon glyphicon-refresh spinner"></span>';
     var htmlSuccess = '<span style="color: green;" class="glyphicon glyphicon-ok"></span>';
+    var htmlPending = '<span style="font-weight: bold;">...</span>';
 
     function getCSRFToken() {
         return $('[name=csrfmiddlewaretoken]')[0].value;
@@ -111,8 +112,8 @@
                 status = Number(el.getAttribute('data-orig-status'));
             if (status) {
                 $el.html(htmlSuccess);
+                return;
             }
-        });
 
 
         $(".process_button").click(function(event) {

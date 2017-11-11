@@ -81,8 +81,20 @@ def file_all(request):
         })
 
 
-    files = File.objects.values(
-        'id', 'name', 'created_at', 'jsondata', 'owner', 'size').order_by('id')
+    file_filter = request.GET.get('filter')
+
+    if file_filter:
+        # TODO: candidate for refactoring out
+        file_ids = [int(file_id) for file_id in file_filter.split(",")]
+    else:
+        file_ids = []
+
+    if file_ids:
+        query = File.objects.filter(id__in=file_ids)
+    else:
+        query = File.objects.all()
+
+    files = [f.as_json() for f in query.order_by('id')]
 
     annotated_files = annotate_urls(files, request=request, tpl="files/{id}")
 
@@ -165,8 +177,20 @@ def file_data(request, item_id=None):
 @api_view(['GET'])
 @login_required
 def task_all(request):
+    task_filter = request.GET.get('filter')
+
+    if task_filter:
+        task_ids = task_filter.split(",")
+    else:
+        task_ids = []
+
+    ret = {}
+    for task_id in task_ids:
+        ret[task_id] = filehandler.get_task_state(task_id)
+
     return JsonResponse({
         "success": True,
+        "status": ret,
 #        "state": filehandler.get_task_state(task_id)
     })
 
