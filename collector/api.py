@@ -11,8 +11,9 @@ from django.http import (
     Http404,
 )
 from django.conf.urls import url
-from rest_framework.decorators import api_view
+from rest_framework.decorators import api_view, parser_classes
 from rest_framework.response import Response
+from rest_framework.parsers import MultiPartParser
 
 import datetime
 import time
@@ -62,21 +63,33 @@ class Timer(object):
         return "{:3.0f}ms".format((time.time() - self.start) * 1000.0)
 
 
-@api_view(['GET'])
+@api_view(['GET', 'POST'])
+@parser_classes((MultiPartParser,))
 @login_required
-@csrf_exempt
 def file_all(request):
     """Lists all files readable by the current user"""
+    method = request.method
+
+    if method == 'POST':
+        ret = []
+        for key in request.FILES.keys():
+            for file in request.FILES.getlist(key):
+                ret.append(filehandler.save_request_file(file, request.user))
+        return Response({
+            'success': True,
+            'files': annotate_urls(ret, request=request, tpl='files/{id}')
+        })
+
+
     files = File.objects.values(
         'id', 'name', 'created_at', 'jsondata', 'owner', 'size').order_by('id')
 
     annotated_files = annotate_urls(files, request=request, tpl="files/{id}")
 
-    return Response(    annotated_files)
+    return Response(annotated_files)
 
 @api_view(['GET', 'DELETE'])
 @login_required
-@csrf_exempt
 def file_single(request, item_id=None):
     """Shows details of a single file"""
     try:
@@ -85,7 +98,6 @@ def file_single(request, item_id=None):
         raise Http404()
     method = request.method
     if method == 'GET':
-#        return Response(file.as_json())
         ret = file.as_json()
         if ret.get('jsondata'):
             return Response(annotate_url(
@@ -105,7 +117,6 @@ def file_single(request, item_id=None):
 
 @api_view(['GET'])
 @login_required
-@csrf_exempt
 def file_single_jsondata(request, item_id=None):
     try:
         file = File.objects.get(id=item_id)
@@ -117,10 +128,21 @@ def file_single_jsondata(request, item_id=None):
 
     return Response(file.jsondata.as_json()['data'])
 
-@csrf_exempt
+
+@api_view(['GET'])
 @login_required
-def task_state(request, task_id=None):
+def task_all(request):
     return JsonResponse({
+        "success": True,
+#        "state": filehandler.get_task_state(task_id)
+    })
+
+
+@api_view(['GET'])
+@login_required
+def task_single(request, task_id=None):
+    return JsonResponse({
+        "id": task_id,
         "success": True,
         "state": filehandler.get_task_state(task_id)
     })
@@ -131,5 +153,6 @@ urlpatterns = [
     url(r'^{}files/(?P<item_id>[0-9]+)$'.format(BASE_URL), file_single),
     url(r'^{}files/(?P<item_id>[0-9]+)/jsondata$'.format(BASE_URL),
         file_single_jsondata),
-    url(r'^{}tasks/(?P<task_id>[a-z0-9\-]+)$'.format(BASE_URL), task_state),
+    url(r'^{}tasks/$'.format(BASE_URL), task_all),
+    url(r'^{}tasks/(?P<task_id>[a-z0-9\-]+)$'.format(BASE_URL), task_single),
 ]

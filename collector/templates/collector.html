@@ -18,9 +18,11 @@
             Number of files uploaded: {{ num_files }}
             <div id="filelist_container"></div>
             <button id="deleteButton">Delete selected</button>
-            <form action="upload" method="post" enctype="multipart/form-data">
+            <form action="/API/files/" xaction="upload" method="post" enctype="multipart/form-data">
                 Select file to upload:
                 <input type="file" name="file" id="fileSelector" multiple/>
+            {% csrf_token %}
+                
                 <input type="submit" value="Upload" name="uploadButton"/>
             </form>
         </div>

@@ -58,7 +58,7 @@ class File(models.Model):
             'id': self.id,
             'name': self.name,
             'size': self.size,
-            'owner': self.owner,
+            'owner': self.owner.id,
             'jsondata': None,
         }
         try:

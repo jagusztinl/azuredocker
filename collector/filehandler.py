@@ -17,8 +17,24 @@ def save_request_file(request_file, owner):
     fileModel.save()
 #    process_file(fileModel.id);
     return dict(
-        size=rf.size,
-        name=rf.name,
+        id=fileModel.id,
+        size=fileModel.size,
+        name=fileModel.name,
+    )
+
+def save_request_body(body, owner):
+    """ Save a file from a request """
+    fileModel = File(
+        name="posted file",
+        data=bytes(body, 'utf-8'),
+        owner=owner,
+    )
+    fileModel.save()
+#    process_file(fileModel.id);
+    return dict(
+        id=fileModel.id,
+        size=fileModel.size,
+        name=fileModel.name,
     )
 
 
