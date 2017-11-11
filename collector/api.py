@@ -94,7 +94,7 @@ def file_all(request):
     else:
         query = File.objects.all()
 
-    files = [f.as_json() for f in query.order_by('id')]
+    files = [f.as_json() for f in query.order_by('-created_at')]
 
     annotated_files = annotate_urls(files, request=request, tpl="files/{id}")
 
