@@ -172,7 +172,7 @@
                         file: file,
                         viewState: {
                             progress: false,
-                            expanded: file.id == 15,
+                            expanded: false,
                             checked: false
                         }
                     };

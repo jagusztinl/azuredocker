@@ -114,6 +114,7 @@
                 $el.html(htmlSuccess);
                 return;
             }
+        });
 
 
         $(".process_button").click(function(event) {
