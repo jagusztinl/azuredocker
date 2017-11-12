@@ -102,21 +102,17 @@
 
             	}
             },
-            viewState: {
-                allChecked: {
-                    type: Boolean,
-                    default: false
-                }
+            loading: {
+                type: Boolean,
+                default: false
             }
         },
         methods: {
             checkAll: function() {
-                var checked = this.viewState.checked = !this.viewState.checked;
+                var checked = !this.allChecked;
                 this.files.forEach(function(item) {
                     item.viewState.checked = checked;
-
                 });
-
             }
         },
         computed: {
@@ -126,18 +122,26 @@
                     return false;
                 }
                 for(i=0;i<this.files.length;i++) {
-                    if (!this.files.viewState.checked) {
+                    if (!this.files[i].viewState.checked) {
                         return false;
                     }
                 }
                 return true;
-            }
+            },
+            tableClass: function() {
+                var base = "table table-responsive table-hover filelist-container ";
+                if (this.loading) {
+                    return base + "loading";
+                }
+                return base + "table-striped";
+
+            },
         },
         template: [
-            '<table class="table table-responsive table-hover table-striped filelist-container">',
+            '<table v-bind:class="tableClass">',
             '<thead>',
             '<tr>',
-            '<th><input class="filelist_checkbox" v-on:click="checkAll" type="checkbox" v-bind:checked="viewState.allChecked"></th>',
+            '<th><input class="filelist_checkbox" v-on:click="checkAll" type="checkbox" v-bind:checked="allChecked"></th>',
             '<th>Id</th>',
             '<th>Name</th>',
             '<th>Uploaded</th>',
@@ -147,9 +151,6 @@
             '</thead>',
             '<tbody>',
             '<file-item v-for="file in files" v-bind:file="file.file" :key="file.id" v-bind:viewState="file.viewState" v-bind:actions="actions"></file-item>',
-            '<tr v-if="files.length === 0">',
-            '<td colspan="7">Loading...</td>',
-            '</tr>',
             '</tbody>',
             '</table>'
         ].join("")
@@ -165,11 +166,12 @@
             '<div>',
             '<div style="position: fixed;" role="group" aria-label="Basic example">',
             '<button type="button" class="btn btn-primary" v-bind:disabled="!haveSelection" v-on:click="deleteSelected">Delete Selected</button>',
+            '<button type="button" class="btn btn-primary" v-bind:disabled="loading" v-on:click="reload">Reload</button>',
 //            '<button type="button" class="btn btn-primary">Middle</button>',
 //            '<button type="button" class="btn btn-primary">Right</button>',
             '</div>',
             '<div style="height: 40px;">&nbsp;</div>',
-            '<file-list v-bind:files="files" v-bind:actions="actions" v-bind:viewState="viewState"></file-list>',
+            '<file-list v-bind:files="files" v-bind:actions="actions" v-bind:viewState="viewState" v-bind:loading="loading"></file-list>',
             '</div>'
         ].join("\n"),
         data: {
@@ -184,20 +186,10 @@
             viewState: {},
             deleteQueue: [],
             deleteCurrent: null,
+            loading: false
         },
         created: function() {
-            this.refreshFileList(function(files) {
-                app.files = files.map(function(file) {
-                    return {
-                        file: file,
-                        viewState: {
-                            progress: false,
-                            expanded: false,
-                            checked: false
-                        }
-                    };
-                });
-            });
+            this.reload();
         },
         mounted: function() {
             this.pollTasks();
@@ -237,9 +229,27 @@
                 });
             },
             refreshFileList: function(callback) {
-                $.getJSON('/API/files/', function(ret) {
-                    callback(ret);
-                });
+                return $.getJSON('/API/files/');
+            },
+            reload: function() {
+                if (this.loading) {
+                    return;
+                }
+                this.loading = true;
+                this.refreshFileList().then(function(files) {
+                    app.files = files.map(function(file) {
+                        return {
+                            file: file,
+                            viewState: {
+                                progress: false,
+                                expanded: false,
+                                checked: false
+                            }
+                        };
+                    });
+                }).always(function() {
+                    this.loading = false;
+                }.bind(this));
             },
             process: function(id) {
                 this.files.forEach(function(item) {

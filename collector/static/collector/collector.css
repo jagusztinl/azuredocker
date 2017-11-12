@@ -11,3 +11,18 @@
     transform: rotate(360deg);
   }
 }
+
+
+table.loading {
+	animation-name: table_loading;
+	animation-duration: 1s;
+	animation-iteration-count: infinite;
+}
+
+
+
+@keyframes table_loading {
+	0% {background-color:#eeeeee;}
+	50% {background-color:#ffffff;}
+	100% {background-color:#eeeeee;}
+}
