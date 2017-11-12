@@ -89,14 +89,23 @@ def file_all(request):
     else:
         file_ids = []
 
+    t_query = Timer()
     if file_ids:
         query = File.objects.filter(id__in=file_ids)
     else:
         query = File.objects.all()
+    log.info("Time for query: {}".format(t_query))
 
-    files = [f.as_json() for f in query.order_by('-created_at')]
+    t_json = Timer()
 
+#    files = [f.as_json() for f in query.order_by('-created_at')]
+    files = query.values(
+        'id', 'created_at', 'size', 'name', 'jsondata').order_by('-created_at')
+    log.info("Time to serialize to json: {}".format(t_json))
+
+    t_annotate = Timer()
     annotated_files = annotate_urls(files, request=request, tpl="files/{id}")
+    log.info("Time to annotate: {}".format(t_annotate))
 
     return Response(annotated_files)
 
