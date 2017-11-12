@@ -63,8 +63,11 @@
         },
         computed: {
             trClass: function() {
+                if (this.viewState.deleting) {
+                    return "deleting";
+                }
                 if (this.viewState.checked) {
-                    return "info";
+                    return "marked";
                 }
                 return "";
 
@@ -214,6 +217,15 @@
             }
         },
         methods: {
+            setViewStateFor: function(id, state) {
+                var i = 0, item, key, value;
+                for(i=0;i<this.files.length;i++) {
+                    item = this.files[i];
+                    if (item.file.id === id) {
+                        Object.assign(item.viewState, state);
+                    }
+                }
+            },
             deleteSelected: function() {
                 this.getSelectedIds().forEach(function(id) {
                     if (this.deleteQueue.indexOf(id) === -1) {
@@ -243,7 +255,8 @@
                             viewState: {
                                 progress: false,
                                 expanded: false,
-                                checked: false
+                                checked: false,
+                                deleting: false
                             }
                         };
                     });
@@ -336,6 +349,9 @@
                     if (!this.deleteCurrent) {
                         return;
                     }
+                    this.setViewStateFor(this.deleteCurrent, {
+                        deleting: true
+                    });
                     $.ajax({
                         url: "/API/files/" + this.deleteCurrent, 
                         type: 'DELETE',
@@ -347,9 +363,17 @@
                         this.deleteCurrent =  null;
                         this.deleteNext();
                     }.bind(this)).fail(function(res) {
-                        // put it last. try again later
-                        console.log("Failed deleting " + this.deleteCurrent + ", trying again later");
-//                        this.deleteQueue.push(this.deleteCurrent);
+                        if (res && res.status === 404) {
+                            console.log("Deleted file that was already deleted.");
+                            removeOne(this.files, function(item) {
+                                return item.file.id === me.deleteCurrent;
+                            });
+                        } else {
+                            this.setViewStateFor(this.deleteCurrent, {
+                                deleting: false
+                            });
+                            console.log("Failed deleting " + this.deleteCurrent + ", trying again later");
+                        }
                         this.deleteCurrent = null;
                         this.deleteNext();
                     }.bind(this));

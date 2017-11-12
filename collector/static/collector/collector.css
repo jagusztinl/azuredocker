@@ -19,10 +19,30 @@ table.loading {
 	animation-iteration-count: infinite;
 }
 
-
-
 @keyframes table_loading {
 	0% {background-color:#eeeeee;}
 	50% {background-color:#ffffff;}
 	100% {background-color:#eeeeee;}
+}
+
+
+.marked {
+	background-color:#ffeeee ! important;
+	color: #800;
+	text-decoration: line-through;
+}
+
+.deleting {
+	animation-name: deleting;
+	animation-duration: 1s;
+	animation-iteration-count: infinite;
+	text-decoration: line-through;
+}
+
+
+
+@keyframes deleting {
+	0% {background-color:#ffeeee; color: #800;}
+	50% {background-color:#ffffff; color: #ccc;}
+	100% {background-color:#ffeeee; color: #800;}
 }
