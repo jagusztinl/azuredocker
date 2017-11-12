@@ -217,7 +217,7 @@
                     }
                 }
                 if (task_ids.length > 0) {
-                    $.get('/API/tasks/?filter=' + task_ids.join(",")).done(function(res) {
+                    $.getJSON('/API/tasks/?filter=' + task_ids.join(",")).done(function(res) {
                         setTimeout(function() {
                             me.pollTasks();
                         }, me.pollInterval);
