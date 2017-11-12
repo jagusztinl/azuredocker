@@ -5,6 +5,20 @@
         return $('[name=csrfmiddlewaretoken]')[0].value;
     }
 
+    /**
+     * Because lodash remove() doesn't trigger
+     * any updates.
+     */
+    function removeOne(arr, fn) {
+        var i = 0;
+        for(i=0;i<arr.length;i++) {
+            if (fn(arr[i])) {
+                arr.splice(i, 1);
+                return;
+            }
+        }
+    }
+
     var HTML_STATUS = {
 	    FAILURE: function(error) {
 	    	var span = document.createElement('span');
@@ -147,7 +161,17 @@
 
     var app = new Vue({
         el: '#filelist',
-        template: '<file-list v-bind:files="files" v-bind:actions="actions" v-bind:viewState="viewState"></file-list>',
+        template: [
+            '<div>',
+            '<div style="position: fixed;" role="group" aria-label="Basic example">',
+            '<button type="button" class="btn btn-primary" v-bind:disabled="!haveSelection" v-on:click="deleteSelected">Delete Selected</button>',
+//            '<button type="button" class="btn btn-primary">Middle</button>',
+//            '<button type="button" class="btn btn-primary">Right</button>',
+            '</div>',
+            '<div style="height: 40px;">&nbsp;</div>',
+            '<file-list v-bind:files="files" v-bind:actions="actions" v-bind:viewState="viewState"></file-list>',
+            '</div>'
+        ].join("\n"),
         data: {
             files: [],
             tasks: {},
@@ -157,7 +181,9 @@
             	}
             },
             pollInterval: 2000,
-            viewState: {}
+            viewState: {},
+            deleteQueue: [],
+            deleteCurrent: null,
         },
         created: function() {
             this.refreshFileList(function(files) {
@@ -180,7 +206,36 @@
             // stop polling
 
         },
+        computed: {
+            haveSelection: function() {
+                var i, files;
+                files = this.files;
+                if (!files) {
+                    return false;
+                }
+                for(i=0;i<files.length;i++) {
+                    if (files[i].viewState.checked) {
+                        return true;
+                    }
+                }
+                return false;
+            }
+        },
         methods: {
+            deleteSelected: function() {
+                this.getSelectedIds().forEach(function(id) {
+                    if (this.deleteQueue.indexOf(id) === -1) {
+                        this.deleteQueue.push(id);
+                    }
+                }.bind(this));
+            },
+            getSelectedIds: function() {
+                return this.files.filter(function(item) {
+                    return item.viewState.checked;
+                }).map(function(item) {
+                    return item.file.id;
+                });
+            },
             refreshFileList: function(callback) {
                 $.getJSON('/API/files/', function(ret) {
                     callback(ret);
@@ -261,6 +316,41 @@
                     });
                 });
             },
+            deleteNext: function() {
+                var me = this;
+                if (this.deleteQueue.length === 0) {
+                    return;
+                }
+                if (!this.deleteCurrent) {
+                    this.deleteCurrent = this.deleteQueue.shift();
+                    if (!this.deleteCurrent) {
+                        return;
+                    }
+                    $.ajax({
+                        url: "/API/files/" + this.deleteCurrent, 
+                        type: 'DELETE',
+                        headers: {'X-CSRFTOKEN': getCSRFToken()},
+                    }).done(function(res) {
+                        removeOne(this.files, function(item) {
+                            return item.file.id === me.deleteCurrent;
+                        });
+                        this.deleteCurrent =  null;
+                        this.deleteNext();
+                    }.bind(this)).fail(function(res) {
+                        // put it last. try again later
+                        console.log("Failed deleting " + this.deleteCurrent + ", trying again later");
+//                        this.deleteQueue.push(this.deleteCurrent);
+                        this.deleteCurrent = null;
+                        this.deleteNext();
+                    }.bind(this));
+                }
+            }
+        },
+        watch: {
+            deleteQueue: function(queue) {
+                console.log("deleteQueue", queue);
+                this.deleteNext();
+            }
         }
     });
 
