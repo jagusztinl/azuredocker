@@ -100,7 +100,8 @@ def file_all(request):
 
 #    files = [f.as_json() for f in query.order_by('-created_at')]
     files = query.values(
-        'id', 'created_at', 'size', 'name', 'jsondata').order_by('-created_at')
+        'id', 'created_at', 'size', 'name', 'jsondata', 'error'
+    ).order_by('-created_at')
     log.info("Time to serialize to json: {}".format(t_json))
 
     t_annotate = Timer()
