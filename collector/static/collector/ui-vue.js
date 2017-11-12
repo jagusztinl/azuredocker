@@ -5,9 +5,6 @@
         return $('[name=csrfmiddlewaretoken]')[0].value;
     }
 
-
-
-
     var HTML_STATUS = {
 	    FAILURE: function(error) {
 	    	var span = document.createElement('span');
@@ -91,9 +88,6 @@
 
             	}
             },
-            tasks: {
-                type: Array
-            },
             viewState: {
                 allChecked: {
                     type: Boolean,
@@ -135,10 +129,10 @@
             '<th>Uploaded</th>',
             '<th>Size</th>',
             '<th colspan="2">Processed</th>',
-            '</thead>',
             '</tr>',
+            '</thead>',
             '<tbody>',
-            '<file-item v-for="file in files" v-bind:file="file.file" v-bind:viewState="file.viewState" v-bind:actions="actions"></file-item>',
+            '<file-item v-for="file in files" v-bind:file="file.file" :key="file.id" v-bind:viewState="file.viewState" v-bind:actions="actions"></file-item>',
             '<tr v-if="files.length === 0">',
             '<td colspan="7">Loading...</td>',
             '</tr>',
@@ -153,7 +147,7 @@
 
     var app = new Vue({
         el: '#filelist',
-        template: '<file-list v-bind:tasks="tasks" v-bind:files="files" v-bind:actions="actions" v-bind:viewState="viewState"></file-list>',
+        template: '<file-list v-bind:files="files" v-bind:actions="actions" v-bind:viewState="viewState"></file-list>',
         data: {
             files: [],
             tasks: {},
