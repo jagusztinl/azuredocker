@@ -1,5 +1,4 @@
 from .models import File, JsonData
-from taskqueue import tasks
 from celery.result import AsyncResult
 import json
 
@@ -46,12 +45,14 @@ def delete_file(id_):
     return False
 
 def process_file(id_):
+    from taskqueue import tasks
     result = tasks.blob_to_dict.delay(id_)
     if result:
         return result.id
     return None
 
 def get_task_state(task_id):
+    from taskqueue import tasks
     res = AsyncResult(task_id, app=tasks.app)
     return res.state
 

@@ -11,7 +11,7 @@ https://docs.djangoproject.com/en/1.11/ref/settings/
 """
 
 import os
-import sys
+TESTING = os.environ.get("TESTING", "") != ""
 
 
 USE_DOCS = True
@@ -102,7 +102,7 @@ DATABASES = {
     },
 }
 
-if 'test' in sys.argv:
+if TESTING:
     DATABASES['default'] = {
         'ENGINE': 'django.db.backends.sqlite3',
     }
