@@ -163,17 +163,34 @@
 
     }
 
+
+    // File selection: https://tympanus.net/codrops/2015/09/15/styling-customizing-file-inputs-smart-way/
     var app = new Vue({
         el: '#filelist',
         template: [
             '<div>',
-            '<div style="position: fixed;" role="group" aria-label="Basic example">',
+
+            '<div style="position: fixed;">',
+            '<div role="group" aria-label="Basic example">',
             '<button type="button" class="btn btn-primary" v-bind:disabled="!haveSelection" v-on:click="deleteSelected">Delete Selected</button>',
             '<button type="button" class="btn btn-primary" v-bind:disabled="loading" v-on:click="reload">Reload</button>',
-//            '<button type="button" class="btn btn-primary">Middle</button>',
+            '<label class="btn btn-primary btn-file" v-bind:disabled="uploading">',
+                'Upload <input type="file" style="display: none;" multiple="true" v-on:change="fileSelected"/>',
+            '</label>',
+//            '<button type="button" class="btn btn-primary"><input type="file" id="file" name="file" style="width: 0.1px;"></input><label for="file">Select file</label></button>',
 //            '<button type="button" class="btn btn-primary">Right</button>',
             '</div>',
-            '<div style="height: 40px;">&nbsp;</div>',
+
+            '<div class="progress" style="margin-top: 10px;" v-if="uploading">',
+            '<div class="active progress-bar-striped progress-bar" role="progressbar" v-bind:aria-valuenow="uploadProgress" aria-valuemin="0" aria-valuemax="100" v-bind:style="{ width: uploadProgress + \'%\' }">',
+            '<span class="sr-only">{{ uploadProgress }}% Complete</span>',
+            '<span style="text-align: left;">Uploading...</span>',
+            '</div>',
+            '</div>',
+
+            '</div>',
+
+            '<div style="height: 70px;">&nbsp;</div>',
             '<file-list v-bind:files="files" v-bind:actions="actions" v-bind:viewState="viewState" v-bind:loading="loading"></file-list>',
             '</div>'
         ].join("\n"),
@@ -189,7 +206,9 @@
             viewState: {},
             deleteQueue: [],
             deleteCurrent: null,
-            loading: false
+            loading: false,
+            uploading: false,
+            uploadProgress: 0
         },
         created: function() {
             this.reload();
@@ -232,6 +251,57 @@
                         this.deleteQueue.push(id);
                     }
                 }.bind(this));
+            },
+            fileSelected: function(event) {
+                var me = this;
+                console.log("File selected");
+                console.log(arguments);
+                var files = event.target.files, i;
+                if (files.length === 0) {
+                    return;
+                }
+                console.log(files);
+                var formdata = new window.FormData();
+                for(i=0;i<files.length;i++) {
+                    formdata.append("files[]", files[i]);
+                }
+                var filenames = [];
+                for(i=0;i<files.length;i++) {
+                    filenames.push(files[i].name);
+                }
+                formdata.append("csrfmiddlewaretoken", getCSRFToken());
+                this.uploadProgress = 0;
+                $.ajax({
+                    url: '/API/files/',
+                    method: 'POST',
+                    processData: false,
+                    contentType: false,
+                    data: formdata,
+                    xhr: function(){
+                        var xhr = $.ajaxSettings.xhr() ;
+                        xhr.upload.onprogress = function(evt) {
+                           me.uploadProgress = evt.loaded/evt.total*100;
+                       } ;
+                        xhr.upload.onload = function( ) {
+                            me.uploadProgress = 100;
+                        };
+                        return xhr ;
+                    }
+                }).done(function(jsonRes) {
+                    console.log("Finished uploading");
+                    console.log(jsonRes);
+                    me.reload();
+                }).fail(function(res) {
+                    if (res.responseJSON) {
+                        alert("Failed uploading: " + res.responseJSON.detail);
+                    } else {
+                        alert("Failed uploading: " + res.statusText);
+                    }
+                }).always(function() {
+                    me.uploading = false;
+                });
+                me.uploading = filenames;
+
             },
             getSelectedIds: function() {
                 return this.files.filter(function(item) {
