@@ -3,6 +3,21 @@
 }
 
 
+
+@media screen and (max-width: 500px) {
+	.limit_column_width {
+		width: 100px;
+		overflow-x: hidden; 
+		white-space: nowrap; 
+		text-overflow: ellipsis;
+	}
+}
+
+.align_right {
+	text-align: right;
+}
+
+
 @keyframes rotate {
   from {
     transform: rotate(0deg);

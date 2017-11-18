@@ -37,19 +37,18 @@
         template: [
             '<tr v-bind:class="trClass">',
                 '<td><input class="filelist_checkbox" v-on:click="check" type="checkbox" v-bind:checked="viewState.checked"></input></td>',
-                '<td>{{ file.id }}</td>',
-                '<td>{{ file.name }}',
+                '<td><div class="limit_column_width">{{ file.name }}</div>',
                     '<div v-if="viewState.expanded">',
                         '<div class="bg-warning" v-if="file.error"><span style="font-weight: bold">Error: </span>{{ file.error }}</div>',
                     '</div>',
                 '</td>',
                 '<td>{{ uploadedFromNow }}</td>',
-                '<td>{{ file.size }}</td>',
-                '<td v-html="htmlStatus"></td>',
+                '<td class="align_right">{{ sizeMB }} <span style="font-size: 10px;">MB</span></td>',
                 '<td>',
+                    '<div v-html="htmlStatus"></div>',
                     '<span v-if="viewState.progress">...</span>',
                     '<span v-if="file.jsondata">&nbsp;</span>',
-                    '<a style="cursor: hand;" v-if="!viewState.progress && !file.jsondata" v-on:click="click">Process</a>',
+                    '<a style="cursor: hand;" v-if="!viewState.progress && !file.jsondata" v-on:click="click">Prcs</a>',
                 '</td>',
             '</tr>'
         ].join(""),
@@ -86,7 +85,23 @@
         	},
             uploadedFromNow: function() {
                 return moment(this.file.created_at).fromNow();
-            }
+            },
+            sizeMB: function() {
+                var MB = 1024 * 1024, size_mb;
+                if (this.file.size < 0) {
+                    return "n/a";
+                }
+                size_mb = this.file.size / MB;
+                try {
+                    return size_mb.toFixed(2);
+                } catch(e) {
+                    return "n/a";
+                }
+
+
+
+            },
+
         }
     });
 
@@ -145,11 +160,11 @@
             '<thead>',
             '<tr>',
             '<th><input class="filelist_checkbox" v-on:click="checkAll" type="checkbox" v-bind:checked="allChecked"></th>',
-            '<th>Id</th>',
+//            '<th>Id</th>',
             '<th>Name</th>',
             '<th>Uploaded</th>',
             '<th>Size</th>',
-            '<th colspan="2">Processed</th>',
+            '<th>Status</th>',
             '</tr>',
             '</thead>',
             '<tbody>',
@@ -163,6 +178,26 @@
 
     }
 
+    Vue.component('progress-bar', {
+        template: [
+            '<div class="progress">',
+            '<div class="active progress-bar-striped progress-bar" role="progressbar" v-bind:aria-valuenow="progress" aria-valuemin="0" aria-valuemax="100" v-bind:style="{ width: progress + \'%\' }">',
+            '<span class="sr-only">{{ progress }}% Complete</span>',
+            '<span style="text-align: left;">{{ label }}</span>',
+            '</div>',
+            '</div>',
+        ].join(""),
+        props: {
+            progress: {
+                type: Number,
+                default: 0,
+            },
+            label: {
+                type: String,
+                default: ""
+            }
+        }
+    });
 
     // File selection: https://tympanus.net/codrops/2015/09/15/styling-customizing-file-inputs-smart-way/
     var app = new Vue({
@@ -181,12 +216,8 @@
 //            '<button type="button" class="btn btn-primary">Right</button>',
             '</div>',
 
-            '<div class="progress" style="margin-top: 10px;" v-if="uploading">',
-            '<div class="active progress-bar-striped progress-bar" role="progressbar" v-bind:aria-valuenow="uploadProgress" aria-valuemin="0" aria-valuemax="100" v-bind:style="{ width: uploadProgress + \'%\' }">',
-            '<span class="sr-only">{{ uploadProgress }}% Complete</span>',
-            '<span style="text-align: left;">Uploading...</span>',
-            '</div>',
-            '</div>',
+            '<progress-bar style="margin-top: 10px;" v-if="uploading" v-bind:progress="uploadProgress" label="Uploading...">',
+            '</progress-bar>',
 
             '</div>',
 
