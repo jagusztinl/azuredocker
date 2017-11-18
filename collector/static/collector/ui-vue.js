@@ -35,7 +35,7 @@
     Vue.component('file-item', {
         props: ['file', 'viewState', 'actions'],
         template: [
-            '<tr v-bind:class="trClass">',
+            '<tr v-bind:class="trClass" v-bind:id="file.id">',
                 '<td><input class="filelist_checkbox" v-on:click="check" type="checkbox" v-bind:checked="viewState.checked"></input></td>',
                 '<td><div class="limit_column_width">{{ file.name }}</div>',
                     '<div v-if="viewState.expanded">',
@@ -111,6 +111,11 @@
                 type: Array,
                 default: []
             },
+            lastPage: {
+                type: Number,
+                default: 0
+
+            },
             actions: {
             	type: Object,
             	default: {
@@ -134,6 +139,10 @@
             }
         },
         computed: {
+            visibleFiles: function() {
+                var PAGESIZE = 50;
+                return this.files.slice(0, (this.lastPage + 1) * PAGESIZE);
+            },
             allChecked: function() {
                 var i;
                 if (this.files.length === 0) {
@@ -168,7 +177,7 @@
             '</tr>',
             '</thead>',
             '<tbody>',
-            '<file-item v-for="file in files" v-bind:file="file.file" :key="file.id" v-bind:viewState="file.viewState" v-bind:actions="actions"></file-item>',
+            '<file-item v-for="file in visibleFiles" v-bind:file="file.file" :key="file.id" v-bind:viewState="file.viewState" v-bind:actions="actions"></file-item>',
             '</tbody>',
             '</table>'
         ].join("")
@@ -222,11 +231,12 @@
             '</div>',
 
             '<div style="height: 70px;">&nbsp;</div>',
-            '<file-list v-bind:files="files" v-bind:actions="actions" v-bind:viewState="viewState" v-bind:loading="loading"></file-list>',
+            '<file-list v-bind:lastPage="lastPage" v-bind:files="files" v-bind:actions="actions" v-bind:viewState="viewState" v-bind:loading="loading"></file-list>',
             '</div>'
         ].join("\n"),
         data: {
             files: [],
+            lastPage: 0,
             tasks: {},
             actions: {
             	process: function(id) {
@@ -246,6 +256,12 @@
         },
         mounted: function() {
             this.pollTasks();
+            window.onscroll = function(ev) {
+                if ((window.innerHeight + window.scrollY) >= (document.body.offsetHeight - 200)) {
+                   app.lastPage++;
+                    // you're at the bottom of the page
+                }
+            };
         },
         destroyed: function() {
             // stop polling
