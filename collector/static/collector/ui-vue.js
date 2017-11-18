@@ -116,6 +116,11 @@
                 default: 0
 
             },
+            PAGESIZE: {
+                type: Number,
+                default: 0
+
+            },
             actions: {
             	type: Object,
             	default: {
@@ -140,8 +145,10 @@
         },
         computed: {
             visibleFiles: function() {
-                var PAGESIZE = 50;
-                return this.files.slice(0, (this.lastPage + 1) * PAGESIZE);
+                if (this.lastPage === -1) {
+                    return this.files;
+                }
+                return this.files.slice(0, (this.lastPage + 1) * this.PAGESIZE);
             },
             allChecked: function() {
                 var i;
@@ -231,12 +238,13 @@
             '</div>',
 
             '<div style="height: 70px;">&nbsp;</div>',
-            '<file-list v-bind:lastPage="lastPage" v-bind:files="files" v-bind:actions="actions" v-bind:viewState="viewState" v-bind:loading="loading"></file-list>',
+            '<file-list v-bind:PAGESIZE="PAGESIZE" v-bind:lastPage="lastPage" v-bind:files="files" v-bind:actions="actions" v-bind:viewState="viewState" v-bind:loading="loading"></file-list>',
             '</div>'
         ].join("\n"),
         data: {
             files: [],
             lastPage: 0,
+            PAGESIZE: 50,
             tasks: {},
             actions: {
             	process: function(id) {
@@ -256,12 +264,14 @@
         },
         mounted: function() {
             this.pollTasks();
+            /*
             window.onscroll = function(ev) {
                 if ((window.innerHeight + window.scrollY) >= (document.body.offsetHeight - 200)) {
                    app.lastPage++;
                     // you're at the bottom of the page
                 }
             };
+            */
         },
         destroyed: function() {
             // stop polling
@@ -357,16 +367,17 @@
                     return item.file.id;
                 });
             },
-            refreshFileList: function(callback) {
+            refreshFileList: function() {
                 return $.getJSON('/API/files/');
             },
             reload: function() {
+                var me = this;
                 if (this.loading) {
                     return;
                 }
                 this.loading = true;
                 this.refreshFileList().then(function(files) {
-                    app.files = files.map(function(file) {
+                    me.files = files.map(function(file) {
                         return {
                             file: file,
                             viewState: {
@@ -377,6 +388,9 @@
                             }
                         };
                     });
+                    setInterval(function() {
+                        me.lastPage = -1;
+                    }, 0);
                 }).always(function() {
                     this.loading = false;
                 }.bind(this));
@@ -454,6 +468,9 @@
                         }
                         item.viewState.progress = false;
                     });
+                    setTimeout(function() {
+                        me.lastPage = -1;
+                    }, 100);
                 });
             },
             deleteNext: function() {
