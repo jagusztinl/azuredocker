@@ -1,5 +1,6 @@
 #!/usr/bin/env python
 
+
 def line_to_dict(line):
     p = [c.strip() for c in line.split(",")]
     return {
@@ -20,7 +21,7 @@ def blob_to_dict(blob):
         try:
             ret.append(line_to_dict(line))
         except Exception as e:
-            raise ValueError("Failed parsing on line {}: {}".format(idx, e))
+            raise TypeError("Failed parsing on line {}: {}".format(idx, e))
     return ret
 
 

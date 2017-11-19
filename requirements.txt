@@ -5,6 +5,8 @@ redis
 djangorestframework
 django-filter
 markdown
+defusedxml
+python-dateutil
 # for dev mode
 docutils
 # Should maybe be separated:

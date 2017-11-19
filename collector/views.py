@@ -21,7 +21,7 @@ def time(request):
     return HttpResponse(html)
 
 @login_required
-def index(request):
+def old(request):
     num_files = File.objects.count()
 
     return HttpResponse(render(
@@ -31,7 +31,7 @@ def index(request):
     )))
 
 @login_required
-def vue(request):
+def index(request):
 
     return HttpResponse(render(
         request,
@@ -84,4 +84,4 @@ def process_files(request):
 
 
 
-views = [index, time, upload, delete_files, process_files, vue]
+views = [index, time, upload, delete_files, process_files, old]

@@ -80,7 +80,6 @@ def file_all(request):
             'files': annotate_urls(ret, request=request, tpl='files/{id}')
         })
 
-
     file_filter = request.GET.get('filter')
 
     if file_filter:

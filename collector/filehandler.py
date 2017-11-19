@@ -2,6 +2,7 @@ from .models import File, JsonData
 from celery.result import AsyncResult
 import json
 
+
 def json_to_bytes(jsondata):
     return bytes(str(json.dumps(jsondata)), 'utf-8')
 
