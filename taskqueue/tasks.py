@@ -5,26 +5,18 @@ import os
 import json
 sys.path += os.path.abspath(os.path.join(__file__, "../../"))
 from brqbackend.wsgi import application  # noqa
-from procs import location_csv, gpx_parser  # noqa
 from collector.models import File, JsonData  # noqa
+from procs import parser
 
 
 def json_to_bytes(jsondata):
     return bytes(str(json.dumps(jsondata)), 'utf-8')
 
 
-def _process_file(file):
+def process_blob(file):
     try:
         blob = str(file.data.tobytes(), 'utf-8')
-
-        ret = None
-        for parser in [location_csv.blob_to_dict, gpx_parser.blob_to_dict]:
-            try:
-                ret = parser(blob)
-                if ret:
-                    break
-            except TypeError as e:
-                pass
+        ret = parser.try_parse(blob, filename=file.name)
 
         if not ret:
             file.error = "No matching parser found"
@@ -56,6 +48,6 @@ def mock_task(sleep_seconds=1):
 def blob_to_dict(id_):
     file = File.objects.filter(id=id_).first()
     if file:
-        _process_file(file)
+        process_blob(file)
         return True
     return False

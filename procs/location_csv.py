@@ -14,6 +14,7 @@ def line_to_dict(line):
 
 
 def blob_to_dict(blob):
+    """Convert BRQ csv format to dict"""
     # Could be optimized by handling streams
     lines = blob.splitlines()
     ret = []
@@ -22,7 +23,9 @@ def blob_to_dict(blob):
             ret.append(line_to_dict(line))
         except Exception as e:
             raise TypeError("Failed parsing on line {}: {}".format(idx, e))
-    return ret
+    return {
+        'segments': [ret]
+    }
 
 
 def csv_to_dict(path):
