@@ -1,5 +1,5 @@
 from django.core.management.base import BaseCommand, CommandError
-from collector.models import JsonData
+from collector.models import Track
 
 
 class Command(BaseCommand):
@@ -11,17 +11,17 @@ class Command(BaseCommand):
     def handle(self, *args, **options):
         num_deleted = 0
         num_failed = 0
-        for jd in JsonData.objects.all():
+        for jd in Track.objects.all():
             try:
                 jd.delete()
                 num_deleted += 1
             except Exception as e:
                 self.stderr.write(
                     self.style.WARNING(
-                        "Failed deleting JsonData entry -> {}".format(e)))
+                        "Failed deleting Track entry -> {}".format(e)))
                 num_failed += 1
 
         self.stdout.write(
             self.style.SUCCESS(
-                'Deleted {} JsonData objects, {} failed'.format(
+                'Deleted {} Track objects, {} failed'.format(
                     num_deleted, num_failed)))

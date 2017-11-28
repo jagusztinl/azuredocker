@@ -5,7 +5,7 @@ import os
 import json
 sys.path += os.path.abspath(os.path.join(__file__, "../../"))
 from brqbackend.wsgi import application  # noqa
-from collector.models import File, JsonData  # noqa
+from collector.models import File, Track  # noqa
 from procs import parser
 
 
@@ -28,7 +28,7 @@ def process_blob(file):
         file.save()
         raise
 
-    jd = JsonData.objects.create(
+    jd = Track.objects.create(
         data=json_to_bytes(ret),
         source=file)
     jd.save()

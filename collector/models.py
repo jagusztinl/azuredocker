@@ -9,7 +9,7 @@ import json
 
 class File(models.Model):
     """
-    Stores an uploaded file. Related to :model:`collector.JsonData` which
+    Stores an uploaded file. Related to :model:`collector.Track` which
     stores the derived JSON data if CSV parsing was successful.
     """
     created_at = models.DateTimeField(auto_now_add=True)
@@ -48,7 +48,7 @@ class File(models.Model):
 
     @property
     def jsondata_meta(self):
-        return [jd.as_json() for jd in JsonData.objects.filter(source=self.id)]
+        return [jd.as_json() for jd in Track.objects.filter(source=self.id)]
 
     def as_json(self):
         """
@@ -64,7 +64,7 @@ class File(models.Model):
             'track': None,
         }
         try:
-            track = JsonData.objects.filter(source=self.id).first()
+            track = Track.objects.filter(source=self.id).first()
             if track:
                 ret['track'] = track.id
         except Exception as e:
@@ -74,7 +74,7 @@ class File(models.Model):
         return ret
 
 
-class JsonData(models.Model):
+class Track(models.Model):
     """
     Stores json data derived from a :model:`collector.File`
     """
@@ -87,6 +87,7 @@ class JsonData(models.Model):
         on_delete=models.CASCADE,
         help_text='File this track was extracted from',
     )
+    bla = models.BigIntegerField()
 
     def as_json(self):
         """

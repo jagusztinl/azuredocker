@@ -11,7 +11,7 @@ import logging
 import datetime
 import re
 import collector.filehandler as filehandler
-from .models import File, JsonData
+from .models import File, Track
 
 # Create your views here.
 
@@ -100,7 +100,7 @@ def jsondata_to_parsed(jd):
 @login_required
 def parsed(request):
     ret = []
-    for jd in JsonData.objects.all():
+    for jd in Track.objects.all():
         try:
             o = jsondata_to_parsed(jd)
             if o:

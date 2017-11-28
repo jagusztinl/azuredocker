@@ -18,7 +18,7 @@ from rest_framework.parsers import MultiPartParser
 import datetime
 import time
 import collector.filehandler as filehandler
-from .models import File, JsonData
+from .models import File, Track
 import logging as log
 
 
@@ -99,7 +99,7 @@ def file_all(request):
 
 #    files = [f.as_json() for f in query.order_by('-created_at')]
     files = query.values(
-        'id', 'created_at', 'size', 'name', 'jsondata', 'error', 'owner'
+        'id', 'created_at', 'size', 'name', 'track', 'error', 'owner'
     ).order_by('-created_at')
     log.info("Time to serialize to json: {}".format(t_json))
 
@@ -198,9 +198,9 @@ def track_all(request):
 
     t_query = Timer()
     if track_ids:
-        query = JsonData.objects.filter(id__in=track_id)
+        query = Track.objects.filter(id__in=track_id)
     else:
-        query = JsonData.objects.all()
+        query = Track.objects.all()
     log.info("Time for query: {}".format(t_query))
 
     t_json = Timer()
@@ -223,8 +223,8 @@ def track_all(request):
 @login_required
 def track_single(request, item_id=None):
     try:
-        track = JsonData.objects.get(id=item_id)
-    except JsonData.DoesNotExist:
+        track = Track.objects.get(id=item_id)
+    except Track.DoesNotExist:
         raise Http404()
 
     method = request.method
