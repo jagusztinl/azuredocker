@@ -87,7 +87,6 @@ class Track(models.Model):
         on_delete=models.CASCADE,
         help_text='File this track was extracted from',
     )
-    bla = models.BigIntegerField()
 
     def as_json(self):
         """
