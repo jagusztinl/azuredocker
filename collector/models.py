@@ -12,12 +12,7 @@ class File(models.Model):
     Stores an uploaded file. Related to :model:`collector.JsonData` which
     stores the derived JSON data if CSV parsing was successful.
     """
-    DATATYPES=(
-        ('L', 'Location CSV'),
-        ('A', 'Accelerometer CSV'),
-    )
     created_at = models.DateTimeField(auto_now_add=True)
-    datatype = models.CharField(max_length=1, choices=DATATYPES)
     data = models.BinaryField(help_text='The file contents')
     error = models.CharField(
         max_length=255,
@@ -91,6 +86,8 @@ class JsonData(models.Model):
         """
         return {
             'id': self.id,
+            'created_at': self.created_at,
+            'source_name': self.source.name,
             'size': self.data.nbytes,
             'data': json.loads(str(self.data.tobytes(), 'utf-8'))
         }
