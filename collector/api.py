@@ -18,7 +18,7 @@ from rest_framework.parsers import MultiPartParser
 import datetime
 import time
 import collector.filehandler as filehandler
-from .models import File
+from .models import File, JsonData
 import logging as log
 
 
@@ -120,15 +120,15 @@ def file_single(request, item_id=None):
     method = request.method
     if method == 'GET':
         ret = file.as_json()
-        if ret.get('jsondata'):
+        if ret.get('track'):
             ret = annotate_url(
                 ret,
                 request=request,
-                tpl='files/{id}/jsondata',
-                key='jsondata_url',
+                tpl='tracks/{track}',
+                key='track_url',
             )
         else:
-            ret['jsondata_url'] = None
+            ret['track_url'] = None
 
         ret = annotate_url(
             ret,
@@ -184,6 +184,63 @@ def file_data(request, item_id=None):
 
 
 @api_view(['GET'])
+@parser_classes((MultiPartParser,))
+@login_required
+def track_all(request):
+    """Lists all files readable by the current user"""
+    track_filter = request.GET.get('filter')
+
+    if track_filter:
+        # TODO: candidate for refactoring out
+        track_ids = [int(track_id) for track_id in track_filter.split(",")]
+    else:
+        track_ids = []
+
+    t_query = Timer()
+    if track_ids:
+        query = JsonData.objects.filter(id__in=track_id)
+    else:
+        query = JsonData.objects.all()
+    log.info("Time for query: {}".format(t_query))
+
+    t_json = Timer()
+
+#    files = [f.as_json() for f in query.order_by('-created_at')]
+    tracks = query.values(
+        'id', 'created_at',
+    ).order_by('-created_at')
+    log.info("Time to serialize to json: {}".format(t_json))
+
+    t_annotate = Timer()
+    annotated_tracks = annotate_urls(
+        tracks, request=request, tpl="tracks/{id}")
+    log.info("Time to annotate: {}".format(t_annotate))
+
+    return Response(annotated_tracks)
+
+
+@api_view(['GET', 'DELETE'])
+@login_required
+def track_single(request, item_id=None):
+    try:
+        track = JsonData.objects.get(id=item_id)
+    except JsonData.DoesNotExist:
+        raise Http404()
+
+    method = request.method
+
+    if method == 'GET':
+        return Response(track.as_json())
+
+    if method == 'DELETE':
+        track.delete()
+        return Response({
+            'success': True
+        })
+
+
+
+@api_view(['GET'])
 @login_required
 def task_all(request):
     task_filter = request.GET.get('filter')
@@ -220,6 +277,8 @@ urlpatterns = [
     url(r'^{}files/(?P<item_id>[0-9]+)/data$'.format(BASE_URL), file_data),
     url(r'^{}files/(?P<item_id>[0-9]+)/jsondata$'.format(BASE_URL),
         file_single_jsondata),
+    url(r'^{}tracks/$'.format(BASE_URL), track_all),
+    url(r'^{}tracks/(?P<item_id>[0-9]+)$'.format(BASE_URL), track_single),
     url(r'^{}tasks/$'.format(BASE_URL), task_all),
     url(r'^{}tasks/(?P<task_id>[a-z0-9\-]+)$'.format(BASE_URL), task_single),
 ]

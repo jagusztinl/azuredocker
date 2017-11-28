@@ -61,11 +61,14 @@ class File(models.Model):
             'size': self.size,
             'owner': self.owner.id,
             'error': self.error,
-            'jsondata': None,
+            'track': None,
         }
         try:
-            ret['jsondata'] = self.jsondata.id
-        except:
+            track = JsonData.objects.filter(source=self.id).first()
+            if track:
+                ret['track'] = track.id
+        except Exception as e:
+            ret['track_error'] = str(e)
             pass
 
         return ret
@@ -77,8 +80,13 @@ class JsonData(models.Model):
     """
     created_at = models.DateTimeField(auto_now_add=True)
     data = models.BinaryField()
-    source = models.OneToOneField(
-        File, null=True, on_delete=models.CASCADE, parent_link=True)
+#    source = models.OneToOneField(
+#        File, null=True, on_delete=models.CASCADE, parent_link=True)
+    source = models.ForeignKey(
+        File,
+        on_delete=models.CASCADE,
+        help_text='File this track was extracted from',
+    )
 
     def as_json(self):
         """
