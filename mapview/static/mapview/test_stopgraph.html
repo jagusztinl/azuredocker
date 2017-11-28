@@ -1,0 +1,79 @@
+<html>
+<head>
+<style>
+#map_canvas {
+  height: 100%;
+}
+.line {
+  fill: none;
+  stroke: #008;
+  stroke-width: 1.5px;
+}
+.dataList .selected {
+    font-weight: bold;
+}
+
+.dataList li {
+    font-family: verdana, helvetica, arial;
+    font-size: 14px;
+    cursor: pointer;
+}
+
+ul.dataList {
+    list-style-type: none;
+    background: #fff;
+}
+
+/* svg */
+.stop {
+    fill: yellow;
+    stroke: black;
+}
+
+
+
+</style>
+<script src="lib/jquery-1.8.3.min.js"></script>
+<script src="lib/underscore-min.js"></script>
+<script src="lib/backbone.js"></script>
+<script src="lib/d3.min.js"></script>
+<script src="class.js"></script>
+<script src="lib/pystringformat.js"></script>
+<script type="text/javascript">
+initClassLibraryWithPrefix("CB");
+CB.fmt = pystringformat;
+</script>
+<script src="lib/moment.js"></script>
+
+<script src="filter.js"></script>
+<script src="qualityprovider.js"></script>
+<script src="list_view.js"></script>
+<script src="map_view.js"></script>
+<script src="stop_view.js"></script>
+<script src="detail_view.js"></script>
+</head>
+<body>
+<div id="graph_container" style="width: 400px; height: 50px; z-index: 100; background: white;">
+</div>
+<button id="switch">Switch</button>
+<script type="text/javascript">
+(function() {
+    "use strict";
+    /*global CB, $ */
+    var model = new CB.QualityModel({id: "1420822815-1420823909.json"});
+    model.fetch();
+    var graph = new CB.StopView({
+        el: $("#graph_container")
+    });
+    graph.setModel(model);
+    
+    $("#switch").click(function() {
+        var newModel = new CB.QualityModel({id: "1418894201-1418895190.json"});
+        newModel.fetch();
+        graph.setModel(newModel);
+    });
+}());
+</script>
+
+</body>
+</html>

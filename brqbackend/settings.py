@@ -31,6 +31,8 @@ DEBUG = True
 
 ALLOWED_HOSTS = ["*"]
 
+GOOGLEMAPS_APIKEY = os.environ.get("GOOGLEMAPS_APIKEY", "")
+
 LOGGING = {
     'version': 1,
     'root': {
@@ -53,6 +55,7 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
     'rest_framework',
     'collector',
+    'mapview',
 ]
 
 if USE_DOCS:

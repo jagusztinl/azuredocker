@@ -1,0 +1,38 @@
+<html>
+<head>
+<style>
+#map_canvas {
+  height: 100%;
+}
+.line {
+  fill: none;
+  stroke: #888;
+  stroke-width: 1.5px;
+}
+</style>
+<script src="lib/jquery-1.8.3.min.js"></script>
+<script src="lib/underscore-min.js"></script>
+<script src="lib/backbone.js"></script>
+<xscript src="lib/d3.min.js"></xscript>
+<script src="http://d3js.org/d3.v3.js"></script>
+<script src="class.js"></script>
+<script src="lib/pystringformat.js"></script>
+<script type="text/javascript">
+initClassLibraryWithPrefix("CB");
+CB.fmt = pystringformat;
+</script>
+<script src="qualityprovider.js"></script>
+<script src="graph_view.js"></script>
+<script src="list_view.js"></script>
+<script src="listdata.js"></script>
+</head>
+<body>
+<div id="list_container" style="position: absolute; left: 0px; top: 0px; width: 300px; padding: 5px;">
+Loading...
+</div>
+<div id="detailed_view" style="position: absolute; left: 300px; top: 0; z-index: 100; background: white;">
+</div>
+
+
+</body>
+</html>

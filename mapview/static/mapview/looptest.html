@@ -1,0 +1,115 @@
+<html>
+<head>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/underscore.js/1.7.0/underscore-min.js"></script>
+</head>
+<body>
+<div><tt id="debug"></tt></div>
+<script type="text/javascript">
+(function () {
+    /*global document, _, setTimeout*/
+    "use strict";
+    var debugEl = document.getElementById("debug");
+    function debug() {
+        var el = document.createElement("span"), args = [], i, text;
+        for(i=0;i<arguments.length;i++) {
+            args[i] = arguments[i];
+        }
+        text = args.join("");
+        if ("textContent" in el) {
+            el.textContent = text;
+        } else {
+            el.innerText = text;
+        }
+        debugEl.appendChild(el);
+        debugEl.appendChild(document.createElement("br"));
+    }
+    
+    var Timer = function() {
+        this._total = 0;
+    };
+    
+    Timer.prototype.start = function() {
+        this._startDate = new Date();
+    };
+    
+    Timer.prototype.stop = function() {
+        this._stopDate = new Date();
+        var diff = this._stopDate - this._startDate;
+        this._total += diff;
+        return diff;
+    };
+    
+    Timer.prototype.toString = function() {
+        return String(this._total);
+    };
+    
+    function loopIter(arr) {
+        var i = 0;
+        var n = 0;
+        for(i=0;i<arr.length;i++) {
+            if (arr[i]) {
+                n++;
+            }
+        }
+    }
+    
+    function loopUnderscore(arr) {
+        var n = 0;
+        _(arr).forEach(function(obj) {
+            if (obj) {
+                n++;
+            }
+        });
+    }
+    
+    function loopEach(arr) {
+        var n = 0;
+        arr.forEach(function(obj) {
+            if (obj) {  
+                n++;
+            }
+        });
+    }
+    
+    function createArray(nItems) {
+        var arr = [];
+        for(var i=0;i<nItems;i++) {
+            arr[i] = "Item" + String(i);
+        }
+        return arr;
+    }
+    
+    function runTest() {
+        debug("...");
+        var arraySize = 10000;
+        var testArray = createArray(arraySize);
+        var i;
+        var nTimes = 1000;
+        var timerIter = new Timer(),
+            timerUnderscore = new Timer(),
+            timerEach = new Timer();
+        for(i=0;i<nTimes;i++) {
+            timerIter.start();
+            loopIter(testArray);
+            timerIter.stop();
+            timerEach.start();
+            loopEach(testArray);
+            timerEach.stop();
+            timerUnderscore.start();
+            loopUnderscore(testArray);
+            timerUnderscore.stop();
+        }
+        
+        debug("Looping over ", arraySize, " items ", nTimes, " times");
+        debug("for: ", timerIter, " ms");
+        debug("native forEach: ", timerEach, " ms");
+        debug("underscore forEach: ", timerUnderscore, " ms");
+    }
+    
+    debug("Starting test...");
+    setTimeout(runTest, 500); // Delay to let the browser settle
+}());    
+</script>
+
+</body>
+</html>

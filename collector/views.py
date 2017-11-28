@@ -11,7 +11,7 @@ import logging
 import datetime
 import re
 import collector.filehandler as filehandler
-from .models import File
+from .models import File, JsonData
 
 # Create your views here.
 
@@ -82,6 +82,35 @@ def process_files(request):
     })
 
 
+def jsondata_to_parsed(jd):
+    o = jd.as_json()['data']['segments'][0]
+    if len(o) == 0:
+        return {}
+    start_ts = o[0]['ts']
+    end_ts = o[-1]['ts']
+    return {
+        "start_ts": start_ts,
+        "end_ts": end_ts,
+        "id": "{}-{}".format(start_ts, end_ts),
+        "location": o,
+        "quality": [],
+    }
 
 
-views = [index, time, upload, delete_files, process_files, old]
+@login_required
+def parsed(request):
+    ret = []
+    for jd in JsonData.objects.all():
+        try:
+            o = jsondata_to_parsed(jd)
+            if o:
+                ret.append(o)
+        except:
+            pass
+
+    return JsonResponse(ret, safe=False)
+
+
+
+
+views = [index, time, upload, delete_files, process_files, old, parsed]

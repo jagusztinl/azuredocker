@@ -23,6 +23,7 @@ services:
     environment:
       - RABBITMQ_USER=${RABBITMQ_USER}
       - RABBITMQ_PASS=${RABBITMQ_PASS}
+      - GOOGLEMAPS_APIKEY=${GOOGLEMAPS_APIKEY}
     command: /bin/bash startserver.sh
     container_name: django_web
     ports:
