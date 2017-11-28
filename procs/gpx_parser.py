@@ -20,7 +20,7 @@ def point_to_dict(pt):
     assert(pt.tag == NS + "trkpt")
     time_el = pt.find(NS + 'time')
     if time_el is not None:
-        epoch = timestamp_to_epoch(time_el.text)
+        epoch = timestamp_to_epoch(time_el.text) * 1000
     else:
         raise ValueError("No time tag found")
 
