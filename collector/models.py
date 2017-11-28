@@ -73,6 +73,10 @@ class File(models.Model):
 
         return ret
 
+    @staticmethod
+    def owned_by(user):
+        return File.objects.filter(owner=user.id)
+
 
 class Track(models.Model):
     """
@@ -96,6 +100,12 @@ class Track(models.Model):
             'id': self.id,
             'created_at': self.created_at,
             'source_name': self.source.name,
+            'source': self.source.id,
+            'owner': self.source.owner.id,
             'size': self.data.nbytes,
             'data': json.loads(str(self.data.tobytes(), 'utf-8'))
         }
+
+    @staticmethod
+    def owned_by(user):
+        return Track.objects.filter(source__owner=user.id)

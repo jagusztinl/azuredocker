@@ -90,9 +90,9 @@ def file_all(request):
 
     t_query = Timer()
     if file_ids:
-        query = File.objects.filter(id__in=file_ids)
+        query = File.owned_by(request.user).filter(id__in=file_ids)
     else:
-        query = File.objects.all()
+        query = File.owned_by(request.user).all()
     log.info("Time for query: {}".format(t_query))
 
     t_json = Timer()
@@ -114,7 +114,7 @@ def file_all(request):
 def file_single(request, item_id=None):
     """Shows details of a single file"""
     try:
-        file = File.objects.get(id=item_id)
+        file = File.owned_by(request.user).get(id=item_id)
     except File.DoesNotExist:
         raise Http404()
     method = request.method
@@ -149,7 +149,7 @@ def file_single(request, item_id=None):
 @login_required
 def file_single_jsondata(request, item_id=None):
     try:
-        file = File.objects.get(id=item_id)
+        file = File.owned_by(request.user).get(id=item_id)
     except File.DoesNotExist:
         raise Http404()
 
@@ -163,7 +163,7 @@ def file_single_jsondata(request, item_id=None):
 @login_required
 def file_data(request, item_id=None):
     try:
-        file = File.objects.get(id=item_id)
+        file = File.owned_by(request.user).get(id=item_id)
     except File.DoesNotExist:
         raise Http404()
 
@@ -198,9 +198,9 @@ def track_all(request):
 
     t_query = Timer()
     if track_ids:
-        query = Track.objects.filter(id__in=track_id)
+        query = Track.owned_by(request.user).filter(id__in=track_id)
     else:
-        query = Track.objects.all()
+        query = Track.owned_by(request.user).all()
     log.info("Time for query: {}".format(t_query))
 
     t_json = Timer()
@@ -223,7 +223,7 @@ def track_all(request):
 @login_required
 def track_single(request, item_id=None):
     try:
-        track = Track.objects.get(id=item_id)
+        track = Track.owned_by(request.user).get(id=item_id)
     except Track.DoesNotExist:
         raise Http404()
 
